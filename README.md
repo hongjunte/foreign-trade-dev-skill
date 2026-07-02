@@ -4,6 +4,8 @@
 
 输入客户公司名或域名，AI 自动执行 4 阶段深度背调，输出一份与高端 B2B 商务 UI 风格一致的 HTML 客户背调报告。
 
+![UI Preview](preview.png)
+
 ---
 
 ## 核心功能
@@ -46,7 +48,8 @@
 ```
 foreign-trade-dev-skill/
 ├── SKILL.md       # Skill 定义文件
-├── template.html  # HTML 报告模板
+├── template.html  # HTML 报告模板（象牙白+墨绿+古铜金配色）
+├── preview.png    # UI 界面预览图
 └── README.md      # 本文件
 ```
 
