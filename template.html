@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户背调报告 · {{TARGET_COMPANY}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* 象牙白底 + 墨绿 + 古铜金 = 高端 B2B 商务 */
+    --bg:#f5f1e8;            /* 象牙白纸感 */
+    --bg-2:#efe9dc;          /* 略深 */
+    --paper:#fdfbf5;         /* 卡片纸面 */
+    --ink:#1a2e26;           /* 墨绿主色 */
+    --ink-2:#2d4a3e;         /* 墨绿次 */
+    --ink-dim:#5a6b62;       /* 灰绿 */
+    --ink-mute:#8a9590;      /* 浅灰绿 */
+    --line:#d9d2c0;          /* 米色分割线 */
+    --line-soft:#e6dfcc;
+    --gold:#a87432;          /* 古铜金 */
+    --gold-bright:#c8924a;
+    --gold-soft:#e8d4a8;
+    --rust:#9c3a1f;          /* 锈红（强调） */
+    --rust-soft:#d4a896;
+    --moss:#5a7548;          /* 苔绿（成功） */
+    --moss-soft:#c8d4b8;
+    --shadow:0 1px 2px rgba(26,46,38,0.04), 0 8px 24px rgba(26,46,38,0.06);
+    --shadow-lg:0 4px 12px rgba(26,46,38,0.06), 0 24px 48px rgba(26,46,38,0.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans SC',-apple-system,sans-serif;
+    font-size:14px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(168,116,50,0.06), transparent),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(90,117,72,0.05), transparent);
+  }
+  /* 细噪点 */
+  body::before{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0.5;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.18 0 0 0 0 0.15 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:2;max-width:1320px;margin:0 auto;padding:0 32px 80px}
+
+  /* ============ 顶部导航 ============ */
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo-mark{
+    width:36px;height:36px;
+    background:var(--ink);color:var(--bg);
+    display:grid;place-items:center;
+    font-family:'Fraunces',serif;font-weight:600;font-size:18px;
+    border-radius:2px;
+    position:relative;
+  }
+  .logo-mark::after{
+    content:'';position:absolute;bottom:-3px;right:-3px;
+    width:8px;height:8px;background:var(--gold);border-radius:50%;
+  }
+  .logo-text{font-family:'Fraunces',serif;font-size:22px;font-weight:600;letter-spacing:-0.01em;color:var(--ink)}
+  .logo-text em{font-style:italic;color:var(--gold);font-weight:500}
+  .nav-meta{display:flex;gap:28px;align-items:center;font-size:12px;color:var(--ink-dim);font-family:'JetBrains Mono',monospace}
+  .nav-meta .dot{width:6px;height:6px;border-radius:50%;background:var(--moss);display:inline-block;margin-right:6px;vertical-align:middle;box-shadow:0 0 0 3px rgba(90,117,72,0.2)}
+
+  /* ============ Hero ============ */
+  .hero{padding:64px 0 48px;border-bottom:1px solid var(--line);position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:end}
+  .hero-eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:20px;
+    display:flex;align-items:center;gap:12px;
+  }
+  .hero-eyebrow::before{content:'';width:32px;height:1px;background:var(--gold)}
+  .hero h1{
+    font-family:'Fraunces',serif;font-weight:300;font-size:72px;line-height:0.98;
+    letter-spacing:-0.02em;color:var(--ink);margin-bottom:24px;
+  }
+  .hero h1 em{font-style:italic;font-weight:400;color:var(--gold)}
+  .hero h1 .underline{
+    background:linear-gradient(transparent 70%, var(--gold-soft) 70%);
+    padding:0 4px;
+  }
+  .hero-sub{font-size:16px;color:var(--ink-dim);line-height:1.7;max-width:560px;font-weight:300}
+  .hero-sub b{color:var(--ink);font-weight:500}
+  /* Hero 右侧统计 */
+  .hero-stats{
+    display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+    border:1px solid var(--line);
+  }
+  .stat{background:var(--paper);padding:20px 22px}
+  .stat-num{font-family:'Fraunces',serif;font-size:36px;font-weight:400;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+  .stat-num em{font-style:italic;color:var(--gold)}
+  .stat-label{font-size:11px;color:var(--ink-mute);margin-top:6px;letter-spacing:0.05em;font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+
+  /* ============ 主体布局 ============ */
+  .layout{display:grid;grid-template-columns:260px 1fr;gap:40px;padding-top:40px}
+  .sidebar{position:sticky;top:20px;align-self:start}
+  .side-card{background:var(--paper);border:1px solid var(--line);border-radius:3px;margin-bottom:16px;overflow:hidden}
+  .side-head{padding:12px 18px;border-bottom:1px solid var(--line-soft);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);font-family:'JetBrains Mono',monospace}
+  .side-body{padding:16px 18px}
+  .profile-name{font-family:'Fraunces',serif;font-size:18px;color:var(--ink);font-weight:500;margin-bottom:2px;letter-spacing:-0.01em}
+  .profile-tag{font-size:10px;color:var(--gold);letter-spacing:0.1em;font-family:'JetBrains Mono',monospace;margin-bottom:14px;text-transform:uppercase}
+  .prow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line-soft);font-size:12px}
+  .prow:last-child{border:none}
+  .prow .k{color:var(--ink-mute)}
+  .prow .v{color:var(--ink);text-align:right;max-width:60%;font-weight:500}
+  .prow .v.ok{color:var(--moss)}
+
+  .phase-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--line-soft);cursor:pointer;transition:all .15s;position:relative;text-decoration:none}
+  .phase-item:last-child{border:none}
+  .phase-item:hover{background:var(--bg-2)}
+  .phase-item.active{background:var(--bg-2)}
+  .phase-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold)}
+  .pnum{
+    width:28px;height:28px;border:1px solid var(--line);border-radius:50%;
+    display:grid;place-items:center;font-family:'Fraunces',serif;font-size:13px;
+    color:var(--ink-dim);font-weight:500;flex-shrink:0;
+  }
+  .phase-item.done .pnum{background:var(--moss);border-color:var(--moss);color:var(--paper)}
+  .pinfo .pt{font-size:13px;color:var(--ink);font-weight:500}
+  .pinfo .ps{font-size:11px;color:var(--ink-mute);margin-top:1px}
+
+  /* ============ 主内容 ============ */
+  .main{min-width:0}
+
+  .phase-block{display:block;margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--line)}
+  .phase-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+
+  .phase-head{display:flex;align-items:baseline;gap:18px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+  .phase-no{font-family:'Fraunces',serif;font-size:14px;color:var(--gold);letter-spacing:0.1em;font-style:italic}
+  .phase-title{font-family:'Fraunces',serif;font-size:40px;font-weight:400;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+  .phase-title em{font-style:italic;color:var(--gold)}
+  .phase-meta{margin-left:auto;font-size:11px;color:var(--ink-mute);text-align:right;line-height:1.6;font-family:'JetBrains Mono',monospace}
+  .phase-meta .ok{color:var(--moss)}
+
+  /* Markdown 渲染 */
+  .md{font-size:14px;line-height:1.75;color:var(--ink-2)}
+  .md h1,.md h2,.md h3,.md h4{font-family:'Fraunces',serif;color:var(--ink);margin:28px 0 14px;font-weight:500;line-height:1.3;letter-spacing:-0.01em}
+  .md h1{font-size:30px} .md h2{font-size:24px} .md h3{font-size:19px} .md h4{font-size:16px}
+  .md h3:first-child,.md h4:first-child{margin-top:0}
+  .md p{margin-bottom:14px}
+  .md a{color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-soft);transition:all .15s}
+  .md a:hover{color:var(--gold-bright);border-bottom-color:var(--gold)}
+  .md ul,.md ol{margin:12px 0 16px 22px}
+  .md li{margin-bottom:6px}
+  .md b,.md strong{color:var(--ink);font-weight:600}
+  .md em{color:var(--gold);font-style:italic}
+  .md table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px;background:var(--paper);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .md th{padding:12px 16px;background:var(--bg-2);border-bottom:2px solid var(--line);text-align:left;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink);font-weight:600;font-family:'JetBrains Mono',monospace}
+  .md td{padding:12px 16px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--ink-2)}
+  .md tr:last-child td{border-bottom:none}
+  .md tr:hover td{background:var(--bg-2)}
+  .md code{background:var(--bg-2);padding:2px 6px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--rust)}
+  .md blockquote{
+    border-left:3px solid var(--gold);padding:14px 18px;margin:18px 0;
+    background:var(--paper);border-radius:0 3px 3px 0;color:var(--ink-2);
+    font-style:italic;
+  }
+  .md blockquote b{color:var(--ink);font-style:normal}
+  .md hr{border:none;border-top:1px solid var(--line);margin:28px 0}
+
+  /* 状态徽章 */
+  .badge{display:inline-block;font-size:10px;letter-spacing:0.05em;padding:2px 8px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-weight:600;text-transform:uppercase}
+  .badge.actual{background:rgba(90,117,72,0.15);color:var(--moss)}
+  .badge.predicted{background:rgba(168,116,50,0.15);color:var(--gold)}
+  .badge.verified{background:rgba(90,117,72,0.15);color:var(--moss)}
+  .badge.inferred{background:rgba(168,116,50,0.15);color:var(--gold)}
+
+  /* 开发信卡片 */
+  .email-card{
+    background:var(--paper);border:1px solid var(--line);border-radius:3px;
+    margin:24px 0;overflow:hidden;box-shadow:var(--shadow);
+  }
+  .email-head{
+    padding:16px 22px;background:var(--bg-2);border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .email-type{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold)}
+  .email-subject{font-family:'Fraunces',serif;font-size:16px;color:var(--ink);font-weight:500;margin-top:4px}
+  .email-body{padding:22px;font-family:'Georgia',serif;font-size:14px;line-height:1.8;color:var(--ink-2);white-space:pre-wrap}
+  .email-body b,.email-body strong{color:var(--ink)}
+  .email-signature{margin-top:20px;padding-top:16px;border-top:1px dashed var(--line);font-size:13px;color:var(--ink-dim)}
+
+  /* 洞察卡片 */
+  .insight-card{
+    background:linear-gradient(135deg, var(--paper) 0%, var(--bg-2) 100%);
+    border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:3px;padding:20px 24px;margin:24px 0;
+  }
+  .insight-card h4{font-family:'Fraunces',serif;font-size:16px;color:var(--ink);margin-bottom:12px;font-weight:600}
+  .insight-card p{font-size:13px;color:var(--ink-2);line-height:1.7;margin-bottom:8px}
+  .insight-card p:last-child{margin-bottom:0}
+
+  /* 页脚 */
+  .footer{margin-top:60px;padding-top:28px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-mute);font-family:'JetBrains Mono',monospace}
+  .footer a{color:var(--gold);text-decoration:none}
+
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px;border:2px solid var(--bg)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--ink-mute)}
+
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:32px}
+    .hero h1{font-size:48px}
+    .layout{grid-template-columns:1fr}
+    .sidebar{position:static}
+    .nav-meta{display:none}
+  }
+  @media (max-width:600px){
+    .wrap{padding:0 18px 60px}
+    .hero h1{font-size:38px}
+    .phase-title{font-size:28px}
+    .hero-stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 顶部导航 -->
+  <nav class="nav">
+    <div class="logo">
+      <div class="logo-mark">G</div>
+      <div class="logo-text">外贸开发 <em>Dossier</em></div>
+    </div>
+    <div class="nav-meta">
+      <span><span class="dot"></span>REPORT READY</span>
+      <span>CASE · {{CASE_ID}}</span>
+      <span>{{REPORT_DATE}}</span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-eyebrow">CLIENT DOSSIER · 客户背调报告</div>
+        <h1>目标客户<br><em class="underline">{{TARGET_COMPANY}}</em></h1>
+        <div class="hero-sub">
+          本报告由 <b>外贸开发 Skill</b> 生成，基于 4 阶段情报框架（全景画像 / 渠道动态 / 竞争环境 / 开发信决策人）深度背调生成。
+          所有信息均标注来源，区分"已证实"与"预测/推断"。
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-num"><em>4</em>/4</div>
+          <div class="stat-label">Phases Completed</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">{{SOURCE_COUNT}}</div>
+          <div class="stat-label">Sources Cited</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">{{DECISION_MAKER_COUNT}}</div>
+          <div class="stat-label">Decision Makers</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num"><em>2</em></div>
+          <div class="stat-label">Outreach Emails</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主体布局 -->
+  <div class="layout">
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+
+      <!-- 本厂画像 -->
+      <div class="side-card">
+        <div class="side-head">本厂画像 · SELLER PROFILE</div>
+        <div class="side-body">
+          <div class="profile-name">{{SELLER_NAME}}</div>
+          <div class="profile-tag">{{SELLER_PRODUCT_LINE}}</div>
+          <div class="prow"><span class="k">核心背书</span><span class="v ok">{{SELLER_ENDORSEMENT}}</span></div>
+          <div class="prow"><span class="k">验厂资质</span><span class="v">{{SELLER_AUDIT}}</span></div>
+          <div class="prow"><span class="k">合规认证</span><span class="v">{{SELLER_CERT}}</span></div>
+          <div class="prow"><span class="k">目标市场</span><span class="v">{{SELLER_MARKET}}</span></div>
+          <div class="prow"><span class="k">价格定位</span><span class="v">{{SELLER_PRICING}}</span></div>
+        </div>
+      </div>
+
+      <!-- 阶段导航 -->
+      <div class="side-card">
+        <div class="side-head">调查阶段 · PHASES</div>
+        <a href="#phase1" class="phase-item done">
+          <div class="pnum">1</div>
+          <div class="pinfo">
+            <div class="pt">全景画像</div>
+            <div class="ps">Profile</div>
+          </div>
+        </a>
+        <a href="#phase2" class="phase-item done">
+          <div class="pnum">2</div>
+          <div class="pinfo">
+            <div class="pt">渠道动态</div>
+            <div class="ps">Channels</div>
+          </div>
+        </a>
+        <a href="#phase3" class="phase-item done">
+          <div class="pnum">3</div>
+          <div class="pinfo">
+            <div class="pt">竞争环境</div>
+            <div class="ps">Competition</div>
+          </div>
+        </a>
+        <a href="#phase4" class="phase-item done">
+          <div class="pnum">4</div>
+          <div class="pinfo">
+            <div class="pt">开发信</div>
+            <div class="ps">Outreach</div>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main">
+
+      <!-- Phase 1: 全景画像 -->
+      <section class="phase-block" id="phase1">
+        <div class="phase-head">
+          <div class="phase-no">PHASE / 01</div>
+          <h2 class="phase-title">全景 <em>画像</em></h2>
+          <div class="phase-meta">
+            <div>Profile</div>
+            <div class="ok">✓ COMPLETED</div>
+          </div>
+        </div>
+        <div class="md">
+          {{PHASE1_CONTENT}}
+        </div>
+      </section>
+
+      <!-- Phase 2: 渠道动态 -->
+      <section class="phase-block" id="phase2">
+        <div class="phase-head">
+          <div class="phase-no">PHASE / 02</div>
+          <h2 class="phase-title">渠道 <em>动态</em></h2>
+          <div class="phase-meta">
+            <div>Channels & Activities</div>
+            <div class="ok">✓ COMPLETED</div>
+          </div>
+        </div>
+        <div class="md">
+          {{PHASE2_CONTENT}}
+        </div>
+      </section>
+
+      <!-- Phase 3: 竞争环境 -->
+      <section class="phase-block" id="phase3">
+        <div class="phase-head">
+          <div class="phase-no">PHASE / 03</div>
+          <h2 class="phase-title">竞争 <em>环境</em></h2>
+          <div class="phase-meta">
+            <div>Competition & Environment</div>
+            <div class="ok">✓ COMPLETED</div>
+          </div>
+        </div>
+        <div class="md">
+          {{PHASE3_CONTENT}}
+        </div>
+      </section>
+
+      <!-- Phase 4: 开发信 -->
+      <section class="phase-block" id="phase4">
+        <div class="phase-head">
+          <div class="phase-no">PHASE / 04</div>
+          <h2 class="phase-title">开发信 <em>决策人</em></h2>
+          <div class="phase-meta">
+            <div>Outreach</div>
+            <div class="ok">✓ COMPLETED</div>
+          </div>
+        </div>
+        <div class="md">
+          {{PHASE4_CONTENT}}
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div>Generated by 外贸开发 Skill · {{REPORT_DATETIME}}</div>
+    <div>4-Phase Intelligence Framework</div>
+  </footer>
+
+</div>
+</body>
+</html>
