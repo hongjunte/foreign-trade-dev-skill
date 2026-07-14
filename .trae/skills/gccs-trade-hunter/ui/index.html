@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GCCS · 外贸情报终端 — Trade Hunter</title>
+<meta name="description" content="深挖任意海外买家，4 阶段生成高势能冷开发信。支持 GLM / DeepSeek / OpenAI / MiniMax。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* 象牙白底 + 墨绿 + 古铜金 = 高端 B2B 商务 */
+    --bg:#f5f1e8;            /* 象牙白纸感 */
+    --bg-2:#efe9dc;          /* 略深 */
+    --paper:#fdfbf5;         /* 卡片纸面 */
+    --ink:#1a2e26;           /* 墨绿主色 */
+    --ink-2:#2d4a3e;         /* 墨绿次 */
+    --ink-dim:#5a6b62;       /* 灰绿 */
+    --ink-mute:#8a9590;      /* 浅灰绿 */
+    --line:#d9d2c0;          /* 米色分割线 */
+    --line-soft:#e6dfcc;
+    --gold:#a87432;          /* 古铜金 */
+    --gold-bright:#c8924a;
+    --gold-soft:#e8d4a8;
+    --rust:#9c3a1f;          /* 锈红（强调） */
+    --rust-soft:#d4a896;
+    --moss:#5a7548;          /* 苔绿（成功） */
+    --moss-soft:#c8d4b8;
+    --shadow:0 1px 2px rgba(26,46,38,0.04), 0 8px 24px rgba(26,46,38,0.06);
+    --shadow-lg:0 4px 12px rgba(26,46,38,0.06), 0 24px 48px rgba(26,46,38,0.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans SC',-apple-system,sans-serif;
+    font-size:14px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    /* 纸张纹理 */
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(168,116,50,0.06), transparent),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(90,117,72,0.05), transparent);
+  }
+  /* 细噪点 */
+  body::before{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0.5;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.18 0 0 0 0 0.15 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:2;max-width:1320px;margin:0 auto;padding:0 32px 80px}
+
+  /* ============ 顶部导航 ============ */
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo-mark{
+    width:36px;height:36px;
+    background:var(--ink);color:var(--bg);
+    display:grid;place-items:center;
+    font-family:'Fraunces',serif;font-weight:600;font-size:18px;
+    border-radius:2px;
+    position:relative;
+  }
+  .logo-mark::after{
+    content:'';position:absolute;bottom:-3px;right:-3px;
+    width:8px;height:8px;background:var(--gold);border-radius:50%;
+  }
+  .logo-text{font-family:'Fraunces',serif;font-size:22px;font-weight:600;letter-spacing:-0.01em;color:var(--ink)}
+  .logo-text em{font-style:italic;color:var(--gold);font-weight:500}
+  .nav-meta{display:flex;gap:28px;align-items:center;font-size:12px;color:var(--ink-dim);font-family:'JetBrains Mono',monospace}
+  .nav-meta .dot{width:6px;height:6px;border-radius:50%;background:var(--ink-mute);display:inline-block;margin-right:6px;vertical-align:middle}
+  .nav-meta .dot.live{background:var(--moss);box-shadow:0 0 0 3px rgba(90,117,72,0.2);animation:pulse 2s infinite}
+  .nav-meta .dot.warn{background:var(--gold);box-shadow:0 0 0 3px rgba(168,116,50,0.2)}
+  .nav-meta .dot.err{background:var(--rust);box-shadow:0 0 0 3px rgba(156,58,31,0.2)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+  /* ============ Hero ============ */
+  .hero{padding:64px 0 48px;border-bottom:1px solid var(--line);position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:end}
+  .hero-eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;
+    text-transform:uppercase;color:var(--gold);margin-bottom:20px;
+    display:flex;align-items:center;gap:12px;
+  }
+  .hero-eyebrow::before{content:'';width:32px;height:1px;background:var(--gold)}
+  .hero h1{
+    font-family:'Fraunces',serif;font-weight:300;font-size:72px;line-height:0.98;
+    letter-spacing:-0.02em;color:var(--ink);margin-bottom:24px;
+  }
+  .hero h1 em{font-style:italic;font-weight:400;color:var(--gold)}
+  .hero h1 .underline{
+    background:linear-gradient(transparent 70%, var(--gold-soft) 70%);
+    padding:0 4px;
+  }
+  .hero-sub{font-size:16px;color:var(--ink-dim);line-height:1.7;max-width:560px;font-weight:300}
+  .hero-sub b{color:var(--ink);font-weight:500}
+  /* Hero 右侧统计 */
+  .hero-stats{
+    display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+    border:1px solid var(--line);
+  }
+  .stat{background:var(--paper);padding:20px 22px}
+  .stat-num{font-family:'Fraunces',serif;font-size:36px;font-weight:400;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+  .stat-num em{font-style:italic;color:var(--gold)}
+  .stat-label{font-size:11px;color:var(--ink-mute);margin-top:6px;letter-spacing:0.05em;font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+
+  /* ============ 控制区 ============ */
+  .console{padding:40px 0;border-bottom:1px solid var(--line)}
+  .console-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px}
+  .section-eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.2em;
+    text-transform:uppercase;color:var(--gold);
+  }
+  .section-title{font-family:'Fraunces',serif;font-size:28px;font-weight:400;color:var(--ink);letter-spacing:-0.01em}
+  .section-title em{font-style:italic;color:var(--gold)}
+
+  /* 折叠面板 */
+  .panel{
+    background:var(--paper);border:1px solid var(--line);border-radius:3px;
+    margin-bottom:16px;overflow:hidden;
+  }
+  .panel-head{
+    padding:16px 22px;display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;user-select:none;border-bottom:1px solid transparent;
+    transition:all .2s;
+  }
+  .panel.open .panel-head{border-bottom-color:var(--line)}
+  .panel-head:hover{background:var(--bg-2)}
+  .panel-head .t{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:var(--ink)}
+  .panel-head .t .ind{width:8px;height:8px;border-radius:50%;background:var(--ink-mute);transition:all .2s}
+  .panel-head .t .ind.ok{background:var(--moss)}
+  .panel-head .t .ind.warn{background:var(--gold)}
+  .panel-head .t .ind.err{background:var(--rust)}
+  .panel-head .chev{color:var(--ink-mute);transition:transform .2s;font-size:14px}
+  .panel.open .panel-head .chev{transform:rotate(180deg)}
+  .panel-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .panel.open .panel-body{max-height:2000px}
+  .panel-body-inner{padding:20px 22px}
+
+  /* Provider 选择 */
+  .providers{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .prov-btn{
+    background:var(--bg);border:1px solid var(--line);color:var(--ink-dim);
+    padding:9px 16px;font-family:'Noto Sans SC',sans-serif;font-size:13px;
+    font-weight:500;cursor:pointer;border-radius:3px;transition:all .15s;
+    display:flex;align-items:center;gap:8px;
+  }
+  .prov-btn:hover{border-color:var(--ink);color:var(--ink)}
+  .prov-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .prov-btn .badge{font-size:9px;letter-spacing:0.05em;padding:2px 6px;border-radius:2px;font-family:'JetBrains Mono',monospace}
+  .prov-btn .badge.ok{background:rgba(90,117,72,0.15);color:var(--moss)}
+  .prov-btn.active .badge.ok{background:rgba(255,255,255,0.2);color:#c8d4b8}
+
+  /* 表单字段 */
+  .field-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;color:var(--ink-mute);font-weight:500;letter-spacing:0.03em;font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+  .field input,.field select,.field textarea{
+    background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;
+    outline:none;border-radius:3px;transition:all .15s;width:100%;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{
+    border-color:var(--ink);background:var(--paper);
+    box-shadow:0 0 0 3px rgba(26,46,38,0.08);
+  }
+  .field input::placeholder{color:var(--ink-mute)}
+
+  /* 测试按钮 */
+  .test-bar{display:flex;align-items:center;gap:14px;margin:16px 0;flex-wrap:wrap}
+  .test-btn{
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:13px;
+    font-weight:500;cursor:pointer;border-radius:3px;transition:all .15s;
+  }
+  .test-btn:hover:not(:disabled){border-color:var(--ink);background:var(--paper)}
+  .test-btn:disabled{opacity:0.6;cursor:wait}
+  .test-btn .tdot{width:8px;height:8px;border-radius:50%;background:var(--ink-mute);transition:all .2s}
+  .test-btn .tdot.testing{background:var(--gold);animation:pulse 1s infinite}
+  .test-btn .tdot.ok{background:var(--moss)}
+  .test-btn .tdot.err{background:var(--rust)}
+  .test-btn.ok{border-color:var(--moss);background:var(--moss-soft)}
+  .test-btn.err{border-color:var(--rust);background:var(--rust-soft)}
+  .test-status{font-size:12px;color:var(--ink-dim);font-family:'JetBrains Mono',monospace}
+  .test-status.ok{color:var(--moss)} .test-status.err{color:var(--rust)} .test-status.testing{color:var(--gold)}
+  .test-detail{flex:1;min-width:200px;font-size:11px;color:var(--ink-mute);font-family:'JetBrains Mono',monospace;line-height:1.5;word-break:break-all}
+  .test-detail.ok{color:var(--moss)} .test-detail.err{color:var(--rust)}
+
+  .proxy-row{margin:14px 0}
+  .proxy-hint{font-size:11px;color:var(--ink-mute);margin-top:6px;font-family:'Noto Sans SC',sans-serif}
+  .proxy-hint.warn{color:var(--gold)}
+
+  .note{
+    font-size:12px;color:var(--ink-dim);line-height:1.7;
+    padding:12px 16px;background:var(--bg-2);border-left:3px solid var(--gold);
+    border-radius:0 3px 3px 0;
+  }
+  .note b{color:var(--ink);font-weight:600}
+  .note code{background:var(--paper);padding:1px 6px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink)}
+
+  /* 调查输入 */
+  .launch-row{display:flex;gap:10px;align-items:stretch;margin-top:8px}
+  .launch-input{
+    flex:1;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+    padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:14px;
+    outline:none;border-radius:3px;transition:all .15s;
+  }
+  .launch-input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(26,46,38,0.08)}
+  .launch-btn{
+    background:var(--ink);color:var(--paper);border:1px solid var(--ink);
+    padding:0 28px;font-family:'Noto Sans SC',sans-serif;font-weight:500;font-size:14px;
+    cursor:pointer;border-radius:3px;transition:all .15s;
+    display:flex;align-items:center;gap:10px;
+  }
+  .launch-btn:hover:not(:disabled){background:var(--ink-2);transform:translateY(-1px);box-shadow:var(--shadow)}
+  .launch-btn:disabled{opacity:0.4;cursor:not-allowed}
+  .stop-btn{
+    background:var(--rust);color:var(--paper);border:1px solid var(--rust);
+    padding:0 22px;font-family:'Noto Sans SC',sans-serif;font-weight:500;font-size:14px;
+    cursor:pointer;border-radius:3px;display:none;
+  }
+  .stop-btn.show{display:flex;align-items:center}
+
+  /* ============ 主体布局 ============ */
+  .layout{display:grid;grid-template-columns:260px 1fr;gap:40px;padding-top:40px}
+  .sidebar{position:sticky;top:20px;align-self:start}
+  .side-card{background:var(--paper);border:1px solid var(--line);border-radius:3px;margin-bottom:16px;overflow:hidden}
+  .side-head{padding:12px 18px;border-bottom:1px solid var(--line-soft);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);font-family:'JetBrains Mono',monospace}
+  .side-body{padding:16px 18px}
+  .profile-name{font-family:'Fraunces',serif;font-size:18px;color:var(--ink);font-weight:500;margin-bottom:2px;letter-spacing:-0.01em}
+  .profile-tag{font-size:10px;color:var(--gold);letter-spacing:0.1em;font-family:'JetBrains Mono',monospace;margin-bottom:14px;text-transform:uppercase}
+  .prow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line-soft);font-size:12px}
+  .prow:last-child{border:none}
+  .prow .k{color:var(--ink-mute)}
+  .prow .v{color:var(--ink);text-align:right;max-width:60%;font-weight:500}
+  .prow .v.ok{color:var(--moss)}
+
+  .phase-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--line-soft);cursor:pointer;transition:all .15s;position:relative}
+  .phase-item:last-child{border:none}
+  .phase-item:hover:not(.disabled){background:var(--bg-2)}
+  .phase-item.active{background:var(--bg-2)}
+  .phase-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold)}
+  .phase-item.disabled{opacity:0.4;cursor:not-allowed}
+  .pnum{
+    width:28px;height:28px;border:1px solid var(--line);border-radius:50%;
+    display:grid;place-items:center;font-family:'Fraunces',serif;font-size:13px;
+    color:var(--ink-dim);font-weight:500;flex-shrink:0;
+  }
+  .phase-item.active .pnum{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
+  .phase-item.done .pnum{background:var(--moss);border-color:var(--moss);color:var(--paper)}
+  .phase-item.done .pnum .n{display:none}
+  .phase-item.done .pnum::after{content:'✓';font-size:12px}
+  .pinfo .pt{font-size:13px;color:var(--ink);font-weight:500}
+  .pinfo .ps{font-size:11px;color:var(--ink-mute);margin-top:1px}
+
+  /* ============ 主内容 ============ */
+  .main{min-width:0}
+  .empty{text-align:center;padding:80px 20px}
+  .empty-icon{font-family:'Fraunces',serif;font-size:72px;color:var(--line);line-height:1;margin-bottom:20px}
+  .empty h3{font-family:'Fraunces',serif;font-size:26px;color:var(--ink-dim);font-weight:400;margin-bottom:10px;letter-spacing:-0.01em}
+  .empty p{font-size:14px;color:var(--ink-mute);max-width:440px;margin:0 auto;line-height:1.7}
+
+  .phase-block{display:block;animation:fadeUp .4s ease;margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid var(--line)}
+  .phase-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .phase-head{display:flex;align-items:baseline;gap:18px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+  .phase-no{font-family:'Fraunces',serif;font-size:14px;color:var(--gold);letter-spacing:0.1em;font-style:italic}
+  .phase-title{font-family:'Fraunces',serif;font-size:40px;font-weight:400;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+  .phase-title em{font-style:italic;color:var(--gold)}
+  .phase-meta{margin-left:auto;font-size:11px;color:var(--ink-mute);text-align:right;line-height:1.6;font-family:'JetBrains Mono',monospace}
+  .phase-meta .ok{color:var(--moss)}
+  .phase-meta .live{color:var(--gold);animation:pulse 1.5s infinite}
+
+  /* Markdown 渲染 */
+  .md{font-size:14px;line-height:1.75;color:var(--ink-2)}
+  .md h1,.md h2,.md h3,.md h4{font-family:'Fraunces',serif;color:var(--ink);margin:28px 0 14px;font-weight:500;line-height:1.3;letter-spacing:-0.01em}
+  .md h1{font-size:30px} .md h2{font-size:24px} .md h3{font-size:19px} .md h4{font-size:16px}
+  .md h3:first-child,.md h4:first-child{margin-top:0}
+  .md p{margin-bottom:14px}
+  .md a{color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-soft);transition:all .15s}
+  .md a:hover{color:var(--gold-bright);border-bottom-color:var(--gold)}
+  .md ul,.md ol{margin:12px 0 16px 22px}
+  .md li{margin-bottom:6px}
+  .md b,.md strong{color:var(--ink);font-weight:600}
+  .md em{color:var(--gold);font-style:italic}
+  .md table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px;background:var(--paper);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .md th{padding:12px 16px;background:var(--bg-2);border-bottom:2px solid var(--line);text-align:left;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink);font-weight:600;font-family:'JetBrains Mono',monospace}
+  .md td{padding:12px 16px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--ink-2)}
+  .md tr:last-child td{border-bottom:none}
+  .md tr:hover td{background:var(--bg-2)}
+  .md code{background:var(--bg-2);padding:2px 6px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--rust)}
+  .md blockquote{
+    border-left:3px solid var(--gold);padding:14px 18px;margin:18px 0;
+    background:var(--paper);border-radius:0 3px 3px 0;color:var(--ink-2);
+    font-style:italic;
+  }
+  .md blockquote b{color:var(--ink);font-style:normal}
+  .md hr{border:none;border-top:1px solid var(--line);margin:28px 0}
+  .md .cursor::after{content:'▎';color:var(--gold);animation:blink 1s infinite}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+  /* 错误框 */
+  .err-box{background:var(--rust-soft);border:1px solid var(--rust);border-radius:3px;padding:16px 20px;margin:20px 0;color:var(--ink);font-size:13px;line-height:1.7}
+  .err-box .et{color:var(--rust);font-weight:600;margin-bottom:6px;letter-spacing:0.05em;text-transform:uppercase;font-size:11px;font-family:'JetBrains Mono',monospace}
+  .err-box code{background:rgba(156,58,31,0.15);padding:2px 6px;border-radius:2px;font-family:'JetBrains Mono',monospace}
+
+  /* 阶段切换 */
+  .phase-nav{display:flex;justify-content:space-between;margin-top:36px;padding-top:20px;border-top:1px solid var(--line)}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink-dim);padding:10px 22px;font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:3px;transition:all .15s}
+  .btn:hover:not(:disabled){border-color:var(--ink);color:var(--ink);background:var(--paper)}
+  .btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .btn.primary:hover:not(:disabled){background:var(--ink-2);transform:translateY(-1px);box-shadow:var(--shadow)}
+  .btn:disabled{opacity:0.3;cursor:not-allowed}
+
+  /* Toast */
+  .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--paper);padding:12px 24px;font-size:13px;font-weight:500;border-radius:3px;opacity:0;transition:all .25s;z-index:100;pointer-events:none;box-shadow:var(--shadow-lg);max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--rust)}
+  .toast.ok{background:var(--moss)}
+
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px;border:2px solid var(--bg)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--ink-mute)}
+
+  /* 页脚 */
+  .footer{margin-top:60px;padding-top:28px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-mute);font-family:'JetBrains Mono',monospace}
+  .footer a{color:var(--gold);text-decoration:none}
+
+  /* 主区工具栏 */
+  .main-toolbar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 16px;margin-bottom:20px;
+    background:var(--paper);border:1px solid var(--line);border-radius:3px;
+  }
+  .toolbar-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .toolbar-target{font-family:'Fraunces',serif;font-size:16px;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .toolbar-time{font-size:10px;color:var(--ink-mute);font-family:'JetBrains Mono',monospace}
+  .toolbar-actions{display:flex;gap:6px;flex-shrink:0}
+  .tool-btn{
+    background:var(--bg);border:1px solid var(--line);color:var(--ink-dim);
+    padding:7px 12px;font-family:'Noto Sans SC',sans-serif;font-size:12px;
+    font-weight:500;cursor:pointer;border-radius:3px;transition:all .15s;
+    white-space:nowrap;
+  }
+  .tool-btn:hover{border-color:var(--ink);color:var(--ink);background:var(--paper)}
+  .tool-btn.primary{background:var(--gold);color:var(--paper);border-color:var(--gold)}
+  .tool-btn.primary:hover{background:var(--gold-bright);border-color:var(--gold-bright)}
+  .tool-btn.saved{background:var(--moss);border-color:var(--moss);color:var(--paper)}
+
+  /* 历史记录 */
+  .hist-clear{font-size:10px;color:var(--rust);cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:0.05em;padding:2px 6px;border-radius:2px;transition:all .15s}
+  .hist-clear:hover{background:var(--rust-soft)}
+  .hist-item{padding:11px 18px;border-bottom:1px solid var(--line-soft);cursor:pointer;transition:all .15s}
+  .hist-item:last-child{border:none}
+  .hist-item:hover{background:var(--bg-2)}
+  .hist-item.active{background:var(--bg-2);border-left:3px solid var(--gold);padding-left:15px}
+  .hist-target{font-family:'Fraunces',serif;font-size:14px;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+  .hist-meta{font-size:10px;color:var(--ink-mute);font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;align-items:center}
+  .hist-del{color:var(--ink-mute);cursor:pointer;padding:2px 4px;border-radius:2px;transition:all .15s}
+  .hist-del:hover{color:var(--rust);background:var(--rust-soft)}
+  .hist-empty{padding:20px 18px;text-align:center;font-size:12px;color:var(--ink-mute);font-style:italic}
+
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:32px}
+    .hero h1{font-size:48px}
+    .layout{grid-template-columns:1fr}
+    .sidebar{position:static}
+    .field-grid{grid-template-columns:1fr}
+    .nav-meta{display:none}
+  }
+  @media (max-width:600px){
+    .wrap{padding:0 18px 60px}
+    .hero h1{font-size:38px}
+    .phase-title{font-size:28px}
+    .hero-stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 顶部导航 -->
+  <nav class="nav">
+    <div class="logo">
+      <div class="logo-mark">G</div>
+      <div class="logo-text">GCCS <em>Trade Hunter</em></div>
+    </div>
+    <div class="nav-meta">
+      <span><span class="dot" id="signalDot"></span><span id="signalText">待配置</span></span>
+      <span>MODEL · <span id="modelLabel">—</span></span>
+      <span>CASE · <span id="caseId">PENDING</span></span>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-eyebrow">外贸情报终端 · Global Commercial Intelligence</div>
+        <h1>深挖<em>任意</em>海外买家<br>生成<span class="underline">高势能</span>冷开发信</h1>
+        <p class="hero-sub">输入目标客户的公司名或网址，AI 自动执行 <b>4 阶段深度调查</b>——全景画像、渠道动态、竞争环境、开发信与决策人。基于本厂 Walmart/Costco 验厂背书，做差异化匹配。</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num"><em>4</em></div><div class="stat-label">Investigation Phases</div></div>
+        <div class="stat"><div class="stat-num"><em>4</em></div><div class="stat-label">LLM Providers</div></div>
+        <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Target Companies</div></div>
+        <div class="stat"><div class="stat-num">0</div><div class="stat-label">Backend Required</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 控制台 -->
+  <section class="console">
+    <div class="console-head">
+      <div>
+        <div class="section-eyebrow">Step 01 · 配置</div>
+        <div class="section-title">情报<em>控制台</em></div>
+      </div>
+    </div>
+
+    <!-- API 配置 -->
+    <div class="panel open" id="apiPanel">
+      <div class="panel-head" onclick="togglePanel('apiPanel')">
+        <div class="t"><span class="ind" id="apiInd"></span> API 配置</div>
+        <div class="chev">⌄</div>
+      </div>
+      <div class="panel-body">
+        <div class="panel-body-inner">
+          <div class="providers">
+            <button class="prov-btn" data-provider="glm" onclick="setProvider('glm')">GLM 智谱 <span class="badge ok">直连</span></button>
+            <button class="prov-btn active" data-provider="deepseek" onclick="setProvider('deepseek')">DeepSeek <span class="badge ok">直连</span></button>
+            <button class="prov-btn" data-provider="openai" onclick="setProvider('openai')">OpenAI <span class="badge ok">直连</span></button>
+            <button class="prov-btn" data-provider="minimax" onclick="setProvider('minimax')">MiniMax <span class="badge ok">直连</span></button>
+            <button class="prov-btn" data-provider="custom" onclick="setProvider('custom')">自定义</button>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label>API Base URL</label><input id="apiBase" value="https://api.deepseek.com/v1/chat/completions"></div>
+            <div class="field"><label>API Key</label><input id="apiKey" type="password" placeholder="sk-..." autocomplete="off"></div>
+            <div class="field"><label>Model</label><input id="apiModel" value="deepseek-chat"></div>
+          </div>
+          <div class="test-bar">
+            <button class="test-btn" id="testBtn" onclick="testConnection()">
+              <span class="tdot" id="testDot"></span>
+              <span>测试连接</span>
+            </button>
+            <span class="test-status" id="testStatusText">未测试</span>
+            <div class="test-detail" id="testDetail"></div>
+          </div>
+          <div class="field proxy-row">
+            <label>CORS 代理 URL（可选，仅自定义端点异常时用）</label>
+            <input id="proxyUrl" placeholder="留空=直连（四家预设均无需填）· 自定义端点报 CORS 错误时填 http://localhost:8777/?url=">
+            <div class="proxy-hint" id="proxyHint">四家预设均支持浏览器直连，无需填代理</div>
+          </div>
+          <div class="note">
+            <b>说明</b>：API Key 仅存于浏览器 <code>localStorage</code>，不上传任何服务器。四家均实测支持 CORS，填 Key 即用。点"测试连接"验证，绿色=可用。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 本厂画像 -->
+    <div class="panel" id="profilePanel">
+      <div class="panel-head" onclick="togglePanel('profilePanel')">
+        <div class="t"><span class="ind ok"></span> 本厂画像（影响开发信质量）</div>
+        <div class="chev">⌄</div>
+      </div>
+      <div class="panel-body">
+        <div class="panel-body-inner">
+          <div class="field-grid" style="grid-template-columns:1fr 1fr 1fr">
+            <div class="field"><label>公司全称</label><input id="pfCorp" value="[您的公司名]"></div>
+            <div class="field"><label>主营产品</label><input id="pfProduct" value="LED 橱柜灯/工作灯/灯条"></div>
+            <div class="field"><label>核心客户背书</label><input id="pfEndorse" value="Walmart, Costco, Lowe's"></div>
+            <div class="field"><label>验厂资质</label><input id="pfAudit" value="BSCI, SEDEX 4P, ISO9001"></div>
+            <div class="field"><label>合规认证</label><input id="pfCert" value="CE, RoHS, EPREL, ErP-B"></div>
+            <div class="field"><label>差异化优势</label><input id="pfEdge" value="MacAdam 3-step, OEM+ODM"></div>
+            <div class="field"><label>业务员签名</label><input id="pfSign" value="[Your Name] / BD Manager"></div>
+            <div class="field"><label>目标市场</label><input id="pfMarket" value="DACH, 北美"></div>
+            <div class="field"><label>样品能力</label><input id="pfSample" value="支持免费样品"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 调查输入 -->
+    <div class="console-head" style="margin-top:32px">
+      <div>
+        <div class="section-eyebrow">Step 02 · 启动</div>
+        <div class="section-title">调查<em>目标</em></div>
+      </div>
+    </div>
+    <div class="launch-row">
+      <input class="launch-input" id="targetInput" value="https://www.leds24.com/" placeholder="输入客户公司名或官网（如 leds24.com 或 revoART GmbH）">
+      <button class="launch-btn" id="launchBtn" onclick="launchInvestigation()">启动调查 <span>→</span></button>
+      <button class="stop-btn" id="stopBtn" onclick="stopInvestigation()">■ 停止</button>
+    </div>
+  </section>
+
+  <!-- 主体布局 -->
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-card">
+        <div class="side-head">本厂画像</div>
+        <div class="side-body">
+          <div class="profile-name" id="pcCorp">[您的公司名]</div>
+          <div class="profile-tag" id="pcSub">WALMART · COSTCO VERIFIED</div>
+          <div class="prow"><span class="k">主营</span><span class="v" id="pcProduct">LED 橱柜灯</span></div>
+          <div class="prow"><span class="k">验厂</span><span class="v ok" id="pcAudit">BSCI · SEDEX</span></div>
+          <div class="prow"><span class="k">认证</span><span class="v" id="pcCert">CE · EPREL</span></div>
+          <div class="prow"><span class="k">市场</span><span class="v" id="pcMarket">DACH · 北美</span></div>
+        </div>
+      </div>
+      <div class="side-card">
+        <div class="side-head">调查阶段</div>
+        <div class="phase-item active" data-phase="1" onclick="goPhase(1)">
+          <div class="pnum"><span class="n">1</span></div>
+          <div class="pinfo"><div class="pt">全景画像</div><div class="ps">Profile</div></div>
+        </div>
+        <div class="phase-item disabled" data-phase="2" onclick="goPhase(2)">
+          <div class="pnum"><span class="n">2</span></div>
+          <div class="pinfo"><div class="pt">渠道动态</div><div class="ps">Channels</div></div>
+        </div>
+        <div class="phase-item disabled" data-phase="3" onclick="goPhase(3)">
+          <div class="pnum"><span class="n">3</span></div>
+          <div class="pinfo"><div class="pt">竞争环境</div><div class="ps">Market</div></div>
+        </div>
+        <div class="phase-item disabled" data-phase="4" onclick="goPhase(4)">
+          <div class="pnum"><span class="n">4</span></div>
+          <div class="pinfo"><div class="pt">开发信+决策人</div><div class="ps">Outreach</div></div>
+        </div>
+      </div>
+      <div class="side-card" id="historyCard" style="display:none">
+        <div class="side-head" style="display:flex;justify-content:space-between;align-items:center">
+          <span>历史调查</span>
+          <span class="hist-clear" onclick="clearHistory()" title="清空全部">清空</span>
+        </div>
+        <div class="side-body" id="historyList" style="padding:0"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="main-toolbar" id="mainToolbar" style="display:none">
+        <div class="toolbar-info">
+          <span class="toolbar-target" id="toolbarTarget">—</span>
+          <span class="toolbar-time" id="toolbarTime"></span>
+        </div>
+        <div class="toolbar-actions">
+          <button class="tool-btn" onclick="exportMarkdown()" title="导出 Markdown 文件">⬇ Markdown</button>
+          <button class="tool-btn" onclick="exportHtml()" title="导出 HTML 文件">⬇ HTML</button>
+          <button class="tool-btn primary" onclick="saveCurrentReport()" title="保存到本地历史">★ 保存</button>
+        </div>
+      </div>
+      <div id="renderArea">
+        <div class="empty">
+          <div class="empty-icon">◇</div>
+          <h3>等待启动调查</h3>
+          <p>配置 API Key → 输入目标客户网址 → 点击"启动调查"。<br>AI 将流式输出 4 阶段报告，自动保存可随时回看。</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <span>GCCS Trade Hunter · 纯前端 BYOK · Key 仅存本地</span>
+    <span>支持 GLM · DeepSeek · OpenAI · MiniMax</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ Provider ============ */
+const PROVIDERS = {
+  glm:      { base:'https://open.bigmodel.cn/api/paas/v4/chat/completions', model:'glm-4-plus',      cors:true },
+  deepseek: { base:'https://api.deepseek.com/v1/chat/completions',          model:'deepseek-chat',   cors:true },
+  openai:   { base:'https://api.openai.com/v1/chat/completions',            model:'gpt-4o',          cors:true },
+  minimax:  { base:'https://api.minimax.chat/v1/text/chatcompletion_v2',    model:'abab6.5-chat',    cors:true },
+  custom:   { base:'', model:'', cors:null }
+};
+function setProvider(p){
+  document.querySelectorAll('.prov-btn').forEach(b=>b.classList.toggle('active', b.dataset.provider===p));
+  const cfg = PROVIDERS[p];
+  if(p!=='custom'){
+    document.getElementById('apiBase').value = cfg.base;
+    document.getElementById('apiModel').value = cfg.model;
+  }
+  const hint = document.getElementById('proxyHint');
+  const proxyInput = document.getElementById('proxyUrl');
+  if(cfg.cors === true){
+    hint.textContent = '✓ 支持 CORS 直连，无需填代理';
+    hint.className = 'proxy-hint';
+    proxyInput.value = '';
+  }else{
+    hint.textContent = '自定义端点。若测试报 CORS 错误，填代理（运行同目录 proxy.py，代理填 http://localhost:8777/?url=）';
+    hint.className = 'proxy-hint warn';
+  }
+  saveConfig();
+}
+function togglePanel(id){ document.getElementById(id).classList.toggle('open'); }
+
+function buildRequestUrl(targetUrl){
+  const proxy = document.getElementById('proxyUrl').value.trim();
+  if(!proxy) return targetUrl;
+  if(proxy.includes('?url=') || proxy.includes('?target=') || proxy.endsWith('=')){
+    const eqIdx = proxy.lastIndexOf('=');
+    return proxy.substring(0, eqIdx+1) + encodeURIComponent(targetUrl);
+  }
+  return proxy + targetUrl;
+}
+
+/* ============ 持久化 ============ */
+function saveConfig(){
+  const cfg = {
+    base: document.getElementById('apiBase').value,
+    key: document.getElementById('apiKey').value,
+    model: document.getElementById('apiModel').value,
+    proxy: document.getElementById('proxyUrl').value,
+    profile: {
+      corp: document.getElementById('pfCorp').value,
+      product: document.getElementById('pfProduct').value,
+      endorse: document.getElementById('pfEndorse').value,
+      audit: document.getElementById('pfAudit').value,
+      cert: document.getElementById('pfCert').value,
+      edge: document.getElementById('pfEdge').value,
+      sign: document.getElementById('pfSign').value,
+      market: document.getElementById('pfMarket').value,
+      sample: document.getElementById('pfSample').value
+    }
+  };
+  localStorage.setItem('gccs_config', JSON.stringify(cfg));
+  updateProfileCard();
+  const apiChanged = cfg.base !== window._lastApi?.base || cfg.key !== window._lastApi?.key || cfg.model !== window._lastApi?.model || cfg.proxy !== window._lastApi?.proxy;
+  if(apiChanged){
+    resetTestState();
+    window._lastApi = { base:cfg.base, key:cfg.key, model:cfg.model, proxy:cfg.proxy };
+  }
+  updateStatusIndicator();
+}
+function loadConfig(){
+  const raw = localStorage.getItem('gccs_config');
+  if(!raw) return;
+  try{
+    const cfg = JSON.parse(raw);
+    if(cfg.base) document.getElementById('apiBase').value = cfg.base;
+    if(cfg.key) document.getElementById('apiKey').value = cfg.key;
+    if(cfg.model) document.getElementById('apiModel').value = cfg.model;
+    if(cfg.proxy !== undefined) document.getElementById('proxyUrl').value = cfg.proxy;
+    if(cfg.profile){
+      const p = cfg.profile;
+      ['corp','product','endorse','audit','cert','edge','sign','market','sample'].forEach(k=>{
+        if(p[k]) document.getElementById('pf'+k.charAt(0).toUpperCase()+k.slice(1)).value = p[k];
+      });
+    }
+  }catch(e){}
+}
+function updateProfileCard(){
+  document.getElementById('pcCorp').textContent = document.getElementById('pfCorp').value || '[未配置]';
+  document.getElementById('pcSub').textContent = (document.getElementById('pfEndorse').value || '— VERIFIED').toUpperCase();
+  document.getElementById('pcProduct').textContent = document.getElementById('pfProduct').value || '—';
+  document.getElementById('pcAudit').textContent = document.getElementById('pfAudit').value || '—';
+  document.getElementById('pcCert').textContent = document.getElementById('pfCert').value || '—';
+  document.getElementById('pcMarket').textContent = document.getElementById('pfMarket').value || '—';
+}
+function updateStatusIndicator(){
+  const key = document.getElementById('apiKey').value.trim();
+  const model = document.getElementById('apiModel').value.trim();
+  const dot = document.getElementById('signalDot');
+  const text = document.getElementById('signalText');
+  const ind = document.getElementById('apiInd');
+  const label = document.getElementById('modelLabel');
+  const tested = document.getElementById('testBtn').dataset.result;
+  if(tested === 'ok'){
+    dot.className = 'dot live'; text.textContent = 'READY'; ind.className = 'ind ok'; label.textContent = model;
+  }else if(tested === 'err'){
+    dot.className = 'dot err'; text.textContent = 'KEY 无效'; ind.className = 'ind err'; label.textContent = model;
+  }else if(key && model){
+    dot.className = 'dot warn'; text.textContent = '未测试'; ind.className = 'ind warn'; label.textContent = model;
+  }else{
+    dot.className = 'dot'; text.textContent = '待配置'; ind.className = 'ind'; label.textContent = model || '—';
+  }
+}
+function resetTestState(){
+  const btn = document.getElementById('testBtn');
+  if(!btn || btn.dataset.result === 'testing') return;
+  btn.dataset.result = '';
+  btn.classList.remove('ok','err');
+  document.getElementById('testDot').className = 'tdot';
+  const st = document.getElementById('testStatusText');
+  st.className = 'test-status'; st.textContent = '未测试';
+  const dt = document.getElementById('testDetail');
+  dt.className = 'test-detail'; dt.textContent = '';
+}
+
+/* ============ API Key 测试 ============ */
+async function testConnection(){
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const apiBase = document.getElementById('apiBase').value.trim();
+  const model = document.getElementById('apiModel').value.trim();
+  if(!apiKey){ setTestState('err','请先填 API Key','API Key 为空'); return; }
+  if(!apiBase){ setTestState('err','请先填 Base URL','Base URL 为空'); return; }
+  if(!model){ setTestState('err','请先填 Model','Model 名称为空'); return; }
+  const reqUrl = buildRequestUrl(apiBase);
+  const proxyUsed = document.getElementById('proxyUrl').value.trim();
+  setTestState('testing','测试中...', (proxyUsed?'经代理: ':'直连: ') + reqUrl.substring(0,60));
+  document.getElementById('testBtn').disabled = true;
+  const t0 = Date.now();
+  try{
+    const res = await fetch(reqUrl, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${apiKey}` },
+      body: JSON.stringify({ model, messages:[{role:'user',content:'ping'}], max_tokens:5, stream:false })
+    });
+    const elapsed = ((Date.now()-t0)/1000).toFixed(2);
+    if(res.ok){
+      let respInfo = '';
+      try{
+        const json = await res.json();
+        const content = json.choices?.[0]?.message?.content || '';
+        const usage = json.usage;
+        respInfo = content ? `回复: "${content.substring(0,30)}"` : '空回复（认证通过）';
+        if(usage) respInfo += ` · tokens=${usage.total_tokens||'?'}`;
+      }catch(e){ respInfo = '响应解析失败（但认证通过）'; }
+      setTestState('ok', `✓ 有效 · ${elapsed}s`, `模型 ${model} 认证成功 · ${respInfo}`);
+      toast('✓ API Key 测试通过','ok');
+    }else if(res.status === 401 || res.status === 403){
+      const errText = await res.text().catch(()=> '');
+      setTestState('err', `✗ 无效 · ${res.status}`, `认证失败：API Key 无效或权限不足。${errText.substring(0,150)}`);
+      toast('✗ API Key 无效','err');
+    }else if(res.status === 404){
+      setTestState('err', `✗ 404`, `端点不存在：请检查 Base URL`);
+      toast('✗ 端点 404','err');
+    }else if(res.status === 429){
+      setTestState('err', `✗ 429`, `限流或额度不足，Key 本身可能有效`);
+      toast('✗ 限流 429','err');
+    }else{
+      const errText = await res.text().catch(()=> '');
+      setTestState('err', `✗ ${res.status}`, `HTTP ${res.status}: ${errText.substring(0,200)}`);
+      toast(`✗ HTTP ${res.status}`,'err');
+    }
+  }catch(err){
+    const msg = err.message || String(err);
+    let hint = '';
+    const isCorsLike = msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('CORS') || msg.includes('fetch');
+    if(isCorsLike){
+      hint = proxyUsed ? '代理仍失败：换代理或改用 DeepSeek/OpenAI 直连' : 'CORS 错误：填代理（http://localhost:8777/?url=）或改用 DeepSeek/OpenAI';
+    }else if(msg.includes('abort')){ hint = '请求超时'; }
+    else{ hint = msg; }
+    setTestState('err','✗ 网络错误', hint);
+    toast('✗ 网络错误','err');
+  }finally{
+    document.getElementById('testBtn').disabled = false;
+  }
+}
+function setTestState(state, label, detail){
+  const btn = document.getElementById('testBtn');
+  const dot = document.getElementById('testDot');
+  const st = document.getElementById('testStatusText');
+  const dt = document.getElementById('testDetail');
+  dot.className = 'tdot'; st.className = 'test-status'; btn.classList.remove('ok','err'); dt.className = 'test-detail';
+  if(state === 'testing'){ dot.classList.add('testing'); st.classList.add('testing'); btn.dataset.result = 'testing'; }
+  else if(state === 'ok'){ dot.classList.add('ok'); st.classList.add('ok'); btn.classList.add('ok'); btn.dataset.result = 'ok'; dt.classList.add('ok'); }
+  else if(state === 'err'){ dot.classList.add('err'); st.classList.add('err'); btn.classList.add('err'); btn.dataset.result = 'err'; dt.classList.add('err'); }
+  else{ btn.dataset.result = ''; }
+  st.textContent = label;
+  dt.textContent = detail;
+  updateStatusIndicator();
+}
+
+/* ============ Markdown ============ */
+function parseMd(md){
+  const lines = md.split('\n');
+  let html = '', i = 0, inTable = false, tableHead = false;
+  while(i < lines.length){
+    let line = lines[i];
+    if(/^\s*\|/.test(line)){
+      if(!inTable){ inTable = true; tableHead = true; html += '<table><thead>'; }
+      const cells = line.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(c=>c.trim());
+      if(tableHead && /^\s*\|[-:\s|]+\|\s*$/.test(line)){ tableHead = false; html += '</thead><tbody>'; }
+      else if(tableHead){ html += '<tr>'+cells.map(c=>`<th>${inlineMd(c)}</th>`).join('')+'</tr>'; }
+      else{ html += '<tr>'+cells.map(c=>`<td>${inlineMd(c)}</td>`).join('')+'</tr>'; }
+      i++;
+      if(i>=lines.length || !/^\s*\|/.test(lines[i])){ html += '</tbody></table>'; inTable = false; tableHead = false; }
+      continue;
+    }
+    if(inTable){ html += '</tbody></table>'; inTable = false; tableHead = false; }
+    let m;
+    if(m = line.match(/^####\s+(.+)/)){ html += `<h4>${inlineMd(m[1])}</h4>`; i++; continue; }
+    if(m = line.match(/^###\s+(.+)/)){ html += `<h3>${inlineMd(m[1])}</h3>`; i++; continue; }
+    if(m = line.match(/^##\s+(.+)/)){ html += `<h2>${inlineMd(m[1])}</h2>`; i++; continue; }
+    if(m = line.match(/^#\s+(.+)/)){ html += `<h1>${inlineMd(m[1])}</h1>`; i++; continue; }
+    if(/^---+\s*$/.test(line)){ html += '<hr>'; i++; continue; }
+    if(m = line.match(/^>\s?(.*)/)){ html += `<blockquote>${inlineMd(m[1])}</blockquote>`; i++; continue; }
+    if(/^\s*[-*]\s+/.test(line)){
+      html += '<ul>';
+      while(i<lines.length && /^\s*[-*]\s+/.test(lines[i])){ html += `<li>${inlineMd(lines[i].replace(/^\s*[-*]\s+/,''))}</li>`; i++; }
+      html += '</ul>'; continue;
+    }
+    if(/^\s*\d+\.\s+/.test(line)){
+      html += '<ol>';
+      while(i<lines.length && /^\s*\d+\.\s+/.test(lines[i])){ html += `<li>${inlineMd(lines[i].replace(/^\s*\d+\.\s+/,''))}</li>`; i++; }
+      html += '</ol>'; continue;
+    }
+    if(!line.trim()){ i++; continue; }
+    html += `<p>${inlineMd(line)}</p>`;
+    i++;
+  }
+  if(inTable) html += '</tbody></table>';
+  return html;
+}
+function inlineMd(s){
+  return s
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
+
+/* ============ System Prompt ============ */
+function buildSystemPrompt(){
+  const p = {
+    corp: document.getElementById('pfCorp').value,
+    product: document.getElementById('pfProduct').value,
+    endorse: document.getElementById('pfEndorse').value,
+    audit: document.getElementById('pfAudit').value,
+    cert: document.getElementById('pfCert').value,
+    edge: document.getElementById('pfEdge').value,
+    sign: document.getElementById('pfSign').value,
+    market: document.getElementById('pfMarket').value,
+    sample: document.getElementById('pfSample').value
+  };
+  return `你是 GCCS 情报官（Global Commercial Intelligence & Client Sourcing Officer），拥有 15 年外贸 B2B 情报挖掘经验，专门为外贸业务员执行 4 阶段深度客户开发与背调。你的核心能力是从碎片化公开信息中拼凑出完整的客户画像。
+
+# 本厂画像（业务员所在公司）
+- 公司全称: ${p.corp}
+- 主营产品: ${p.product}
+- 核心客户背书: ${p.endorse}
+- 验厂资质: ${p.audit}
+- 合规认证: ${p.cert}
+- 差异化优势: ${p.edge}
+- 目标市场: ${p.market}
+- 业务员签名: ${p.sign}
+- 样品能力: ${p.sample}
+
+# 调查框架（4 阶段）
+用户会**分阶段**要求你输出，每次只输出指定的 Phase。以下是各阶段的结构：
+
+### 🕵️ Phase 1: 全景画像 (Profile)
+| 维度 | 结果 | 来源 |
+|------|------|------|
+| 公司全称 | ... | [Source](url) |
+| 官网 | ... | [Source](url) |
+| 总部地址/电话 | ... | [Source](url) |
+| 中国办事处 | ... | [Source](url) |
+| 关键决策人 | ... | [Source](url) |
+| 邮箱Pattern | ... (标注 Actual/Predicted) | [Source](url) |
+#### ◆ 业务痛点分析
+#### ◆ 产品推荐策略
+
+### 🕵️ Phase 2: 渠道与动态 (Channels & Activities)
+#### ① 销售渠道（表格）  ② 参展记录（表格）  ③ 旗下品牌与类目（表格）  ④ 近期动态（至少2条带URL）
+#### ◆ 战略情报分析
+
+### 🕵️ Phase 3: 竞争与环境 (Competition & Environment)
+#### ① 主要竞争对手（3-5家，表格）  ② 供应链结构  ③ 法规与证书要求（表格）
+#### ◆ 深度洞察（3条actionable）
+
+### 🕵️ Phase 4: 开发信与决策人 (Outreach)
+#### 任务 A · Value-Based Email（英文，引用本厂 ${p.endorse} 背书）
+#### 任务 A · Product-Match Email（英文，品类扩张）
+#### 任务 B · 关键决策人联系表
+#### 任务 C · 终极建议（LinkedIn/样品/跟进节奏）
+
+# ⚡ 深挖指令（核心能力——必须严格执行）
+
+## 决策人挖掘（Phase 1 & 4 重点）
+不要轻易说"未发现"。请从以下数据源逐一排查，能找到任何线索都要输出：
+1. **LinkedIn**：公司主页 / 员工列表（搜索 "公司名 + CEO/Managing Director/Procurement/Sourcing/Buyer"）
+2. **North Data**（德国公司）/ **Companies House**（英国公司）/ **Crunchbase**：查公司注册信息，含总经理/董事/Prokurist 姓名
+3. **展会参展商名单**：Light+Building、IFA、Hong Kong Lighting Fair 等展会官网常有参展商联系人
+4. **公司官网**：About/Team/Management/Impressum/Kontakt 页面，德国公司 Impressum 必有法定负责人
+5. **行业新闻/采访**：Google 搜 "公司名 + CEO/创始人 + interview/news"
+6. **Google 学术/专利**：技术型公司的专利发明人可能是高管
+
+**输出要求**：即使只找到姓名没找到邮箱，也要输出姓名+职位+来源链接。邮箱基于官网邮箱 pattern 推断（标注 Predicted）。
+**找不到时**：不要写"未发现"，改写"公开渠道暂未找到决策人姓名，建议核查：1) LinkedIn Sales Navigator 搜索公司名 2) North Data 查商业登记 3) 致电总部询问采购部"。给出 3 条具体核查路径。
+
+## 中国办事处挖掘（Phase 1 重点——外贸开发的关键情报）
+很多海外中型企业在中国设有采购办/代表处/WFOE，但不会在主官网显著位置标注。请从以下角度逐一排查：
+1. **官网深挖**：Contact 页面是否有 "+86" 中国电话/中国地址；Footer 是否有 "China Office" 链接；是否有中文版网站
+2. **LinkedIn 搜索**："公司名 + China" 看是否有员工标注在中国办公（Shenzhen/Shanghai/Guangzhou）
+3. **天眼查/企查查**：搜索公司英文名或品牌名，看是否有在华注册的子公司/代表处
+4. **海关数据**：进出口记录里的中国收货人/发货人地址
+5. **Google 搜索**："公司名 + China office / Chinese subsidiary / WFOE / 代表处 / 中国办事处 / 采购办" + "公司名 + Shenzhen / Shanghai / Guangzhou / Yiwu / Zhongshan"
+6. **Alibaba/Made-in-China**：该公司是否在这些平台有店铺（通常由中国办事处运营）
+7. **招聘信息**：搜 "公司名 + 招聘 / careers + China"，在华招聘说明有办事处
+8. **行业特征推断**：LED/照明行业中国办事处通常在深圳（灯珠/PCB）、中山古镇（灯饰）；家具/家居在佛山、东莞；电子消费品在深圳/东莞
+
+**输出要求**：找到任何中国相关线索（哪怕是 LinkedIn 上一个在中国的员工）都要输出。
+**找不到时**：不要写"未发现"，改写"暂未发现公开的中国办事处信息。基于行业特征判断，该公司可能通过 [深圳/中山] 的贸易商采购，建议：1) 天眼查搜 [公司英文名] 2) LinkedIn 筛选中国地区员工 3) 海关数据查发货记录"。给出推断+核查路径。
+
+## 邮箱挖掘
+1. 先从官网找到任何公开邮箱（info@、contact@、sales@）→ 标注 Actual
+2. 分析邮箱 pattern（如 first.last@domain.com）
+3. 基于决策人姓名 + pattern 推断个人邮箱 → 标注 Predicted
+4. 找不到时给出建议核查工具（Hunter.io / RocketReach）
+
+# 核心原则
+1. 每条信息标注 Markdown 来源链接
+2. 邮箱标注 Actual（已证实）或 Predicted（推断）
+3. 开发信必须引用本厂画像的真实背书（${p.endorse}）+ 客户具体痛点，禁止通用模板
+4. 调查报告用中文，开发信用英文
+5. **不要编造**不存在的信息，但**必须尽力深挖**——从多个数据源交叉验证
+6. **找不到时给出"建议核查渠道"**（3条具体路径），绝不能简单写"未发现"了事
+7. **严格按用户指定的 Phase 编号输出，只输出该阶段内容**`;
+}
+
+const PHASE_PROMPTS = [
+  { n:1, title:'全景画像', en:'Profile', instruct:'现在执行 Phase 1：全景画像。\n\n必须深挖以下维度并输出表格：\n- 公司全称、官网、总部地址/电话\n- **中国办事处**：按深挖指令逐一排查（官网中国联系方式、LinkedIn 中国员工、天眼查、海关数据、Google 搜索"公司名+China office"、招聘信息、行业特征推断）。即使找不到也要给出推断和建议核查路径，不能写"未发现"\n- **关键决策人**：按深挖指令逐一排查（LinkedIn、North Data/Companies House、展会名单、官网 Impressum/Team、行业新闻）。即使只找到姓名也要输出\n- **邮箱Pattern**：先找官网公开邮箱（Actual），再基于决策人姓名推断个人邮箱（Predicted）\n\n再输出业务痛点分析和产品推荐策略。\n\n严格以 `### 🕵️ Phase 1: 全景画像 (Profile)` 开头。' },
+  { n:2, title:'渠道与动态', en:'Channels', instruct:'基于以上 Phase 1 调查结果，现在执行 Phase 2：渠道与动态。输出销售渠道、参展记录、旗下品牌与类目（3张表格），再输出至少2条近期动态（带URL）和战略情报分析。严格以 `### 🕵️ Phase 2: 渠道与动态 (Channels & Activities)` 开头，只输出 Phase 2。' },
+  { n:3, title:'竞争与环境', en:'Competition', instruct:'基于以上调查，现在执行 Phase 3：竞争与环境。输出主要竞争对手（3-5家表格）、供应链结构、法规与证书要求（表格），再输出3条深度洞察。严格以 `### 🕵️ Phase 3: 竞争与环境 (Competition & Environment)` 开头，只输出 Phase 3。' },
+  { n:4, title:'开发信与决策人', en:'Outreach', instruct:'基于以上全部调查，现在执行 Phase 4：开发信与决策人。\n\n**任务 B 关键决策人联系表**必须包含：姓名、职位、邮箱（Actual/Predicted）、LinkedIn、来源。如果 Phase 1 找到的决策人信息有限，在这里补充更多挖掘（采购经理、销售总监、产品经理等），按深挖指令逐一排查。\n\n再输出两封英文开发信（Value-Based + Product-Match，引用本厂背书）和终极建议（LinkedIn 触达/样品攻势/跟进节奏）。\n\n严格以 `### 🕵️ Phase 4: 开发信与决策人 (Outreach)` 开头，只输出 Phase 4。' }
+];
+
+/* ============ 调查执行 ============ */
+let abortController = null;
+let currentFullText = '';
+let renderedPhases = new Set();
+// 每阶段内容隔离追踪，防止模型回显前序阶段导致内容堆叠重复
+let phaseTexts = {1:'', 2:'', 3:'', 4:''};
+
+async function launchInvestigation(){
+  const target = document.getElementById('targetInput').value.trim();
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const apiBase = document.getElementById('apiBase').value.trim();
+  const model = document.getElementById('apiModel').value.trim();
+  if(!target){ toast('请输入目标客户','err'); return; }
+  if(!apiKey){ toast('请配置 API Key','err'); document.getElementById('apiPanel').classList.add('open'); return; }
+  if(!apiBase || !model){ toast('请配置 API','err'); return; }
+  currentFullText = '';
+  renderedPhases = new Set();
+  phaseTexts = {1:'', 2:'', 3:'', 4:''};
+  abortController = new AbortController();
+  document.getElementById('launchBtn').style.display = 'none';
+  document.getElementById('stopBtn').classList.add('show');
+  document.getElementById('caseId').textContent = target.replace(/^https?:\/\/(www\.)?/,'').substring(0,20).toUpperCase();
+  document.querySelectorAll('.phase-item').forEach((it,i)=>{
+    it.classList.remove('done');
+    it.classList.toggle('disabled', i>0);
+    it.classList.toggle('active', i===0);
+  });
+  document.getElementById('renderArea').innerHTML = `<div class="md" id="liveRender"><p style="color:var(--ink-mute);font-style:italic">▸ 正在连接 AI 模型，开始 Phase 1 情报收集...</p></div>`;
+  showToolbar(target, true);
+  toast('▸ 启动调查：' + target.substring(0,30));
+  try{
+    for(let i=0; i<PHASE_PROMPTS.length; i++){
+      const phase = PHASE_PROMPTS[i];
+      // 更新侧栏：当前阶段 active，之前阶段 done
+      document.querySelectorAll('.phase-item').forEach((it,idx)=>{
+        it.classList.remove('disabled','active','done');
+        if(idx < i) it.classList.add('done');
+        else if(idx === i) it.classList.add('active');
+        else it.classList.add('disabled');
+      });
+      toast(`▸ Phase ${phase.n}/${PHASE_PROMPTS.length}：${phase.title}`);
+      await callApiStreamPhase(apiBase, apiKey, model, target, phase);
+    }
+    toast('✓ 调查完成，4 阶段全部输出','ok');
+    document.querySelectorAll('.phase-item').forEach(it=>{ it.classList.remove('active','disabled'); it.classList.add('done'); });
+    const lastMeta = document.querySelector('.phase-block:last-child .phase-meta');
+    if(lastMeta) lastMeta.innerHTML = '<span class="ok">✓ 已完成</span>';
+    // 显示工具栏 + 自动保存到历史
+    showToolbar(target);
+    saveCurrentReport(true);
+    refreshHistoryList();
+  }catch(err){
+    if(err.name === 'AbortError'){ toast('■ 已停止','err'); }
+    else{ console.error(err); showError(err); }
+  }finally{
+    document.getElementById('launchBtn').style.display = '';
+    document.getElementById('stopBtn').classList.remove('show');
+  }
+}
+function stopInvestigation(){ if(abortController) abortController.abort(); }
+
+async function callApiStreamPhase(base, key, model, target, phase){
+  const systemPrompt = buildSystemPrompt();
+  // 上下文只用已完成阶段的隔离文本，避免回显污染
+  const completedContext = [1,2,3,4]
+    .filter(n => n < phase.n && phaseTexts[n])
+    .map(n => phaseTexts[n])
+    .join('\n\n');
+  const context = completedContext ? `\n\n# 已完成的调查阶段（保持连贯，勿重复，只输出当前阶段）\n${completedContext}\n---\n` : '';
+  const userPrompt = `目标客户：${target}${context}\n\n${phase.instruct}`;
+  const reqUrl = buildRequestUrl(base);
+  const res = await fetch(reqUrl, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${key}` },
+    body: JSON.stringify({ model, messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}], stream:true, temperature:0.4, max_tokens:8192 }),
+    signal: abortController.signal
+  });
+  if(!res.ok){
+    const errText = await res.text().catch(()=> '');
+    throw new Error(`API 错误 ${res.status}: ${errText.substring(0,300)}`);
+  }
+  if(!res.body) throw new Error('API 未返回流式响应');
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+  let phaseRaw = '';  // 当前阶段的原始累积（含可能的回显前序阶段）
+  while(true){
+    const { done, value } = await reader.read();
+    if(done) break;
+    buffer += decoder.decode(value, { stream:true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for(const line of lines){
+      const trimmed = line.trim();
+      if(!trimmed || !trimmed.startsWith('data:')) continue;
+      const data = trimmed.slice(5).trim();
+      if(data === '[DONE]') return;
+      try{
+        const json = JSON.parse(data);
+        const delta = json.choices?.[0]?.delta?.content || json.choices?.[0]?.message?.content || '';
+        if(delta){
+          phaseRaw += delta;
+          // 关键修复：从原始累积中提取本阶段内容，剥离模型回显的前序阶段
+          phaseTexts[phase.n] = extractPhaseContent(phaseRaw, phase.n);
+          // 重建 currentFullText = 4 个阶段隔离文本的拼接，确保无重复
+          currentFullText = [1,2,3,4].map(n => phaseTexts[n]).filter(t => t).join('\n\n');
+          renderStreaming();
+        }
+      }catch(e){}
+    }
+  }
+}
+
+// 从原始流式文本中提取指定阶段的内容，剥离回显的前序阶段和无关前导文本
+function extractPhaseContent(raw, phaseNum){
+  // 匹配所有 Phase 标题，定位当前阶段的起始位置
+  const headerRe = /(?:^|\n)(#{2,4})\s*(?:🕵️\s*)?Phase\s*(\d)([^\n]*)/gi;
+  const matches = [...raw.matchAll(headerRe)];
+  if(matches.length === 0){
+    // 还没出现 Phase 标题，模型在输出前导文本（如"好的，我来..."），暂不渲染
+    return '';
+  }
+  // 找到当前阶段（phaseNum）的最后一个匹配位置（防止模型先回显再正式输出）
+  let myMatch = null;
+  for(let i = matches.length - 1; i >= 0; i--){
+    if(parseInt(matches[i][2]) === phaseNum){
+      myMatch = matches[i];
+      break;
+    }
+  }
+  if(!myMatch){
+    // 当前阶段标题还没出现，模型在回显前序阶段，暂不渲染
+    return '';
+  }
+  // 从当前阶段标题开始截取
+  let content = raw.substring(myMatch.index);
+  // 剥离后续阶段的内容（防止模型在一段输出里包含多个阶段）
+  const nextPhaseRe = new RegExp(`\\n(#{2,4})\\s*(?:🕵️\\s*)?Phase\\s*([${phaseNum+1}-9])`, 'i');
+  const nextMatch = content.match(nextPhaseRe);
+  if(nextMatch && nextMatch.index > 0){
+    content = content.substring(0, nextMatch.index);
+  }
+  return content;
+}
+
+function renderStreaming(){
+  // 丝滑渲染：30ms 节流 + requestAnimationFrame
+  const now = Date.now();
+  if(window._lastRenderTime && now - window._lastRenderTime < 30){
+    if(!window._renderPending){
+      window._renderPending = requestAnimationFrame(()=>{
+        window._renderPending = null;
+        window._lastRenderTime = Date.now();
+        renderStreamingNow();
+      });
+    }
+    return;
+  }
+  window._lastRenderTime = now;
+  renderStreamingNow();
+}
+function renderStreamingNow(){
+  // 放宽正则：支持 : ： — - · | 空格 等任意分隔符，避免模型输出变体导致匹配失败内容堆叠
+  const phaseRe = /(?:^|\n)(#{2,4})\s*(?:🕵️\s*)?Phase\s*(\d)([^\n]*)/gi;
+  let matches = [...currentFullText.matchAll(phaseRe)];
+  // 去重保险：同一阶段号若出现多次（模型回显），只保留最后一次（最完整）
+  const seen = new Map();
+  matches.forEach(m => { seen.set(parseInt(m[2]), m); });
+  matches = [...seen.values()].sort((a,b) => parseInt(a[2]) - parseInt(b[2]));
+  if(matches.length === 0){
+    // 兜底：如果 #liveRender 不存在（如从历史记录加载），创建一个
+    let el = document.getElementById('liveRender');
+    if(!el){
+      const renderArea = document.getElementById('renderArea');
+      if(renderArea){
+        renderArea.innerHTML = `<div class="md" id="liveRender"></div>`;
+        el = document.getElementById('liveRender');
+      }
+    }
+    if(el) el.innerHTML = `${parseMd(currentFullText)}<span class="cursor"></span>`;
+    return;
+  }
+  // 兜底：一旦匹配到 Phase 标题，立即清除 #liveRender 占位，避免残留内容堆叠
+  const liveRenderEl = document.getElementById('liveRender');
+  if(liveRenderEl) liveRenderEl.remove();
+  // 增量渲染：只重建最后一个阶段的 DOM，已完成阶段保留不动
+  const titles = {1:'全景画像 <em>Profile</em>',2:'渠道与动态 <em>Channels</em>',3:'竞争与环境 <em>Competition</em>',4:'开发信与决策人 <em>Outreach</em>'};
+  const metas = {1:'基础档案',2:'销售+参展+动态',3:'对手+供应链+合规',4:'开发信+决策人'};
+  const lastMatch = matches[matches.length-1];
+  const lastNum = parseInt(lastMatch[2]);
+  const lastStart = lastMatch.index;
+  // 关键修复：去掉 Phase 标题行本身，只保留正文，避免标题重复渲染
+  const lastFull = currentFullText.substring(lastStart);
+  const lastNL = lastFull.indexOf('\n');
+  const lastBody = lastNL >= 0 ? lastFull.substring(lastNL+1) : '';
+  renderedPhases.add(lastNum);
+  // 检查最后一个阶段的 section 是否已存在
+  const existingLast = document.getElementById('livePhase'+lastNum);
+  const renderArea = document.getElementById('renderArea');
+  // 如果阶段数增加了（新阶段开始），先建好 section
+  if(!existingLast){
+    let html = '';
+    for(let i=0;i<matches.length;i++){
+      const m = matches[i];
+      const num = parseInt(m[2]);
+      const start = m.index;
+      const end = i+1 < matches.length ? matches[i+1].index : currentFullText.length;
+      const fullBody = currentFullText.substring(start, end);
+      // 去掉每个阶段开头的标题行
+      const nl = fullBody.indexOf('\n');
+      const body = nl >= 0 ? fullBody.substring(nl+1) : '';
+      renderedPhases.add(num);
+      const isLast = i === matches.length-1;
+      html += `<section class="phase-block" id="livePhase${num}">
+        <div class="phase-head">
+          <div class="phase-no">PHASE / ${String(num).padStart(2,'0')}</div>
+          <div class="phase-title">${titles[num] || m[3]}</div>
+          <div class="phase-meta">${isLast?'<span class="live">● 流式输出中</span>':'<span class="ok">✓ 已完成</span>'}<br>${metas[num]||''}</div>
+        </div>
+        <div class="md">${parseMd(body)}${isLast?'<span class="cursor"></span>':''}</div>
+      </section>`;
+    }
+    renderArea.innerHTML = html;
+  }else{
+    // 只更新最后一个阶段的 md 内容，不动已完成阶段
+    const mdEl = existingLast.querySelector('.md');
+    if(mdEl) mdEl.innerHTML = `${parseMd(lastBody)}<span class="cursor"></span>`;
+  }
+  // 更新侧栏状态
+  document.querySelectorAll('.phase-item').forEach((it,i)=>{
+    const n = i+1;
+    it.classList.remove('disabled','active','done');
+    if(renderedPhases.has(n)){
+      if(n === lastNum) it.classList.add('active');
+      else it.classList.add('done');
+    }else it.classList.add('disabled');
+  });
+  // 自动滚动跟随：用 auto 避免 smooth 卡顿，仅在用户已接近底部时滚动
+  const mdEl = existingLast ? existingLast.querySelector('.md') : renderArea.lastElementChild?.querySelector('.md');
+  if(mdEl){
+    const rect = mdEl.getBoundingClientRect();
+    const dist = rect.bottom - window.innerHeight;
+    if(dist < 200) window.scrollBy({top: dist + 80, behavior: 'auto'});
+  }
+}
+
+function goPhase(n){
+  // 所有阶段始终显示，点击侧栏 = 滚动到对应锚点
+  // 只要该阶段已渲染（renderedPhases 包含），就允许跳转
+  if(!renderedPhases.has(n) && n !== 1) return;
+  document.querySelectorAll('.phase-item').forEach((it,i)=>{
+    it.classList.toggle('active', i+1===n);
+  });
+  const target = document.getElementById('livePhase'+n);
+  if(target){
+    const offset = 20;
+    const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({top:y, behavior:'smooth'});
+  }
+}
+
+function showError(err){
+  const msg = err.message || String(err);
+  let hint = '';
+  if(msg.includes('401') || msg.includes('403')) hint = 'API Key 无效或权限不足，请检查 Key。';
+  else if(msg.includes('Failed to fetch') || msg.includes('CORS')) hint = '网络或 CORS 错误。换 DeepSeek/OpenAI 或自建代理。';
+  else if(msg.includes('404')) hint = 'API 端点不存在，检查 Base URL。';
+  else if(msg.includes('429')) hint = '请求过频或额度不足。';
+  document.getElementById('renderArea').innerHTML = `
+    <div class="err-box">
+      <div class="et">⚠ 调查失败</div>
+      <div style="margin-bottom:10px">${msg}</div>
+      ${hint?`<div><b>建议</b>：${hint}</div>`:''}
+    </div>
+    <div class="empty" style="padding:30px 20px">
+      <div class="empty-icon" style="font-size:36px">↻</div>
+      <h3>请修正后重试</h3>
+      <p>检查 API 配置后，重新点击"启动调查"。</p>
+    </div>
+  `;
+  toast('✗ 调查失败','err');
+}
+
+/* ============ 工具栏 + 导出 + 历史 ============ */
+let currentReportId = null;  // 当前查看的报告 ID
+
+function showToolbar(target, isLive){
+  const tb = document.getElementById('mainToolbar');
+  tb.style.display = 'flex';
+  document.getElementById('toolbarTarget').textContent = target;
+  const now = new Date();
+  const ts = now.toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('toolbarTime').textContent = isLive ? '● 调查中 · ' + ts : '✓ ' + ts;
+}
+
+/* ---- 导出 ---- */
+function exportMarkdown(){
+  if(!currentFullText){ toast('暂无内容可导出','err'); return; }
+  const target = document.getElementById('targetInput').value.trim() || 'report';
+  const safeName = target.replace(/^https?:\/\/(www\.)?/,'').replace(/[\/\\:*?"<>|]/g,'_').substring(0,40);
+  const header = `# GCCS 外贸情报报告\n**目标客户**: ${target}\n**生成时间**: ${new Date().toLocaleString('zh-CN')}\n**本厂**: ${document.getElementById('pfCorp').value}\n\n---\n\n`;
+  const blob = new Blob([header + currentFullText], {type:'text/markdown;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `GCCS_${safeName}_${Date.now()}.md`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✓ Markdown 已导出','ok');
+}
+function exportHtml(){
+  if(!currentFullText){ toast('暂无内容可导出','err'); return; }
+  const target = document.getElementById('targetInput').value.trim() || 'report';
+  const safeName = target.replace(/^https?:\/\/(www\.)?/,'').replace(/[\/\\:*?"<>|]/g,'_').substring(0,40);
+  const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>GCCS 报告 - ${target}</title>
+<style>body{font-family:-apple-system,'Segoe UI',sans-serif;max-width:860px;margin:40px auto;padding:0 24px;color:#1a2e26;line-height:1.7}
+h1,h2,h3,h4{color:#1a2e26} table{border-collapse:collapse;width:100%;margin:16px 0} th,td{border:1px solid #ddd;padding:8px 12px;text-align:left} th{background:#f5f1e8} a{color:#a87432} code{background:#f5f1e8;padding:2px 6px;border-radius:2px} blockquote{border-left:3px solid #a87432;padding:8px 16px;background:#fdfbf5;margin:16px 0} .meta{color:#888;font-size:13px;border-bottom:1px solid #eee;padding-bottom:12px;margin-bottom:24px}</style>
+</head><body>
+<h1>GCCS 外贸情报报告</h1>
+<div class="meta">目标客户: ${target}<br>生成时间: ${new Date().toLocaleString('zh-CN')}<br>本厂: ${document.getElementById('pfCorp').value}</div>
+${parseMd(currentFullText)}
+</body></html>`;
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `GCCS_${safeName}_${Date.now()}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✓ HTML 已导出','ok');
+}
+
+/* ---- 历史记录（localStorage）---- */
+function getHistory(){
+  try{ return JSON.parse(localStorage.getItem('gccs_history') || '[]'); }
+  catch(e){ return []; }
+}
+function saveHistory(list){
+  // 最多保留 30 条，超出删除最早的
+  if(list.length > 30) list = list.slice(0, 30);
+  localStorage.setItem('gccs_history', JSON.stringify(list));
+}
+function saveCurrentReport(silent){
+  if(!currentFullText || currentFullText.length < 100){ if(!silent) toast('暂无内容可保存','err'); return; }
+  const target = document.getElementById('targetInput').value.trim();
+  const list = getHistory();
+  const now = Date.now();
+  // 同一目标覆盖更新（保留原 id）
+  let id = currentReportId;
+  const existingIdx = list.findIndex(r => r.target === target);
+  if(existingIdx >= 0){ id = list[existingIdx].id; list.splice(existingIdx, 1); }
+  else if(!id){ id = now; }
+  const report = { id, target, content: currentFullText, time: now, phaseCount: renderedPhases.size };
+  list.unshift(report);
+  saveHistory(list);
+  currentReportId = id;
+  refreshHistoryList();
+  if(!silent) toast('✓ 已保存到历史','ok');
+}
+function loadReport(id){
+  const list = getHistory();
+  const r = list.find(x => x.id === id);
+  if(!r){ toast('报告不存在','err'); return; }
+  currentFullText = r.content;
+  currentReportId = r.id;
+  renderedPhases = new Set();
+  phaseTexts = {1:'', 2:'', 3:'', 4:''};
+  // 从保存的全文中按 Phase 标题拆分回各阶段，保证隔离渲染
+  const headerRe = /(?:^|\n)(#{2,4})\s*(?:🕵️\s*)?Phase\s*(\d)([^\n]*)/gi;
+  const ms = [...r.content.matchAll(headerRe)];
+  ms.forEach((m, i) => {
+    const num = parseInt(m[2]);
+    const start = m.index;
+    const end = i+1 < ms.length ? ms[i+1].index : r.content.length;
+    phaseTexts[num] = r.content.substring(start, end);
+  });
+  document.getElementById('targetInput').value = r.target;
+  document.getElementById('caseId').textContent = r.target.replace(/^https?:\/\/(www\.)?/,'').substring(0,20).toUpperCase();
+  // 直接渲染已完成状态
+  document.getElementById('renderArea').innerHTML = '';
+  renderStreamingNow();
+  // 所有阶段标记为 done
+  document.querySelectorAll('.phase-item').forEach(it=>{ it.classList.remove('disabled','active'); it.classList.add('done'); });
+  document.querySelectorAll('.phase-meta').forEach(m => m.innerHTML = m.innerHTML.replace(/流式输出中/g,'已完成').replace('●','✓').replace('live','ok'));
+  showToolbar(r.target);
+  refreshHistoryList();
+  toast('✓ 已载入：' + r.target.substring(0,30),'ok');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function deleteReport(id, ev){
+  ev.stopPropagation();
+  const list = getHistory().filter(r => r.id !== id);
+  saveHistory(list);
+  refreshHistoryList();
+  toast('已删除','ok');
+}
+function clearHistory(){
+  if(!confirm('确认清空所有历史调查记录？此操作不可撤销。')) return;
+  localStorage.removeItem('gccs_history');
+  refreshHistoryList();
+  toast('历史已清空','ok');
+}
+function refreshHistoryList(){
+  const list = getHistory();
+  const card = document.getElementById('historyCard');
+  const listEl = document.getElementById('historyList');
+  if(list.length === 0){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  listEl.innerHTML = list.map(r => {
+    const d = new Date(r.time);
+    const ts = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const active = r.id === currentReportId ? ' active' : '';
+    const safeTarget = r.target.replace(/</g,'&lt;').substring(0,50);
+    return `<div class="hist-item${active}" onclick="loadReport(${r.id})">
+      <div class="hist-target">${safeTarget}</div>
+      <div class="hist-meta"><span>${ts} · ${r.phaseCount||4}阶段</span><span class="hist-del" onclick="deleteReport(${r.id}, event)" title="删除">✕</span></div>
+    </div>`;
+  }).join('');
+}
+
+function toast(msg, type){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type==='err'?' err':type==='ok'?' ok':'');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* ============ 初始化 ============ */
+loadConfig();
+window._lastApi = {
+  base: document.getElementById('apiBase').value,
+  key: document.getElementById('apiKey').value,
+  model: document.getElementById('apiModel').value,
+  proxy: document.getElementById('proxyUrl').value
+};
+updateProfileCard();
+updateStatusIndicator();
+refreshHistoryList();
+['apiBase','apiKey','apiModel','proxyUrl','pfCorp','pfProduct','pfEndorse','pfAudit','pfCert','pfEdge','pfSign','pfMarket','pfSample'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', saveConfig);
+});
+document.getElementById('targetInput').addEventListener('keydown', (e)=>{
+  if((e.ctrlKey||e.metaKey) && e.key==='Enter') launchInvestigation();
+});
+</script>
+</body>
+</html>

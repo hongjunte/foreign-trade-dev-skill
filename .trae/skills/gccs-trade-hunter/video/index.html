@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>GCCS Trade Hunter · 介绍视频</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg: #f5f1e8;
+    --paper: #fdfbf5;
+    --ink: #1a2e26;
+    --ink-2: #2d4a3e;
+    --ink-dim: #5a6b62;
+    --ink-mute: #8a9590;
+    --line: #d9d2c0;
+    --line-soft: #e6dfcc;
+    --gold: #a87432;
+    --gold-bright: #c8924a;
+    --gold-soft: #e8d4a8;
+    --rust: #9c3a1f;
+    --rust-soft: #d4a896;
+    --moss: #5a7548;
+    --moss-soft: #c8d4b8;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Serif SC', 'Fraunces', serif;
+    overflow: hidden;
+  }
+
+  [data-composition-id="root"] {
+    width: 1920px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* ===== 通用元素 ===== */
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .corner-mark {
+    position: absolute;
+    width: 32px; height: 32px;
+    border-color: var(--gold);
+    border-style: solid;
+  }
+  .corner-mark.tl { top: 40px; left: 40px; border-width: 2px 0 0 2px; }
+  .corner-mark.tr { top: 40px; right: 40px; border-width: 2px 2px 0 0; }
+  .corner-mark.bl { bottom: 40px; left: 40px; border-width: 0 0 2px 2px; }
+  .corner-mark.br { bottom: 40px; right: 40px; border-width: 0 2px 2px 0; }
+
+  /* ===== 场景容器 ===== */
+  .scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 120px;
+  }
+
+  /* ===== Scene 1: 品牌开场 ===== */
+  #scene1 {
+    background: var(--bg);
+  }
+  .s1-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 32px;
+  }
+  .s1-title {
+    font-family: 'Fraunces', serif;
+    font-size: 160px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    color: var(--ink);
+    text-align: center;
+  }
+  .s1-title em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--gold);
+  }
+  .s1-subtitle {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--ink-dim);
+    margin-top: 28px;
+    letter-spacing: 0.1em;
+  }
+  .s1-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink-mute);
+    margin-top: 60px;
+    display: flex;
+    gap: 48px;
+    align-items: center;
+  }
+  .s1-meta .dot {
+    width: 8px; height: 8px;
+    background: var(--moss);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  /* ===== Scene 2: 痛点 ===== */
+  #scene2 {
+    background: var(--bg);
+  }
+  .s2-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 48px;
+  }
+  .s2-problems {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+  }
+  .s2-problem {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--rust);
+    padding: 28px 48px;
+    border-radius: 4px;
+    min-width: 700px;
+  }
+  .s2-x {
+    font-family: 'Fraunces', serif;
+    font-size: 48px;
+    font-weight: 600;
+    color: var(--rust);
+    line-height: 1;
+  }
+  .s2-text {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 38px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ===== Scene 3: 4 阶段框架 ===== */
+  #scene3 {
+    background: var(--bg);
+  }
+  .s3-title {
+    font-family: 'Fraunces', serif;
+    font-size: 56px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  .s3-title em { font-style: italic; color: var(--gold); }
+  .s3-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    color: var(--ink-mute);
+    margin-bottom: 56px;
+  }
+  .s3-phases {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    width: 100%;
+    max-width: 1600px;
+  }
+  .s3-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 36px 28px;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+  .s3-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: var(--gold);
+  }
+  .s3-card-no {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+  }
+  .s3-card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .s3-card-en {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--ink-dim);
+    margin-bottom: 20px;
+  }
+  .s3-card-desc {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+
+  /* ===== Scene 4: 实操演示 ===== */
+  #scene4 {
+    background: var(--bg);
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    padding: 60px 100px;
+  }
+  .s4-left {
+    flex: 0 0 500px;
+  }
+  .s4-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .s4-title {
+    font-family: 'Fraunces', serif;
+    font-size: 48px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 24px;
+  }
+  .s4-title em { font-style: italic; color: var(--gold); }
+  .s4-input-mock {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .s4-input-mock .prompt { color: var(--gold); }
+  .s4-input-mock .url { color: var(--ink-dim); }
+  .s4-input-mock .cursor {
+    width: 10px; height: 22px;
+    background: var(--ink);
+    display: inline-block;
+  }
+  .s4-btn-mock {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 12px 32px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 4px;
+    display: inline-block;
+    border: none;
+  }
+  .s4-right {
+    flex: 1;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 32px;
+    max-height: 700px;
+    overflow: hidden;
+    position: relative;
+  }
+  .s4-right::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: var(--gold);
+  }
+  .s4-phase-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .s4-phase-no {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+  }
+  .s4-phase-title {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .s4-phase-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--moss);
+  }
+  .s4-stream {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink-dim);
+    line-height: 1.8;
+  }
+  .s4-stream .key { color: var(--ink); font-weight: 500; }
+  .s4-stream .val { color: var(--gold); }
+  .s4-stream .hl { color: var(--moss); }
+  .s4-cursor {
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--gold);
+    vertical-align: text-bottom;
+  }
+
+  /* ===== Scene 5: 结尾 ===== */
+  #scene5 {
+    background: var(--bg);
+  }
+  .s5-stamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.4em;
+    color: var(--rust);
+    border: 2px solid var(--rust);
+    padding: 8px 24px;
+    margin-bottom: 48px;
+    transform: rotate(-2deg);
+  }
+  .s5-title {
+    font-family: 'Fraunces', serif;
+    font-size: 140px;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: center;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+  .s5-title em { font-style: italic; color: var(--gold); font-weight: 500; }
+  .s5-tagline {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 32px;
+    color: var(--ink-dim);
+    margin-top: 36px;
+    letter-spacing: 0.15em;
+  }
+  .s5-cta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: var(--ink-mute);
+    margin-top: 56px;
+    letter-spacing: 0.2em;
+  }
+  .s5-cta .arrow { color: var(--gold); }
+</style>
+</head>
+<body>
+<div data-hf-id="hf-itu4" data-composition-id="root" data-width="1920" data-height="1080" data-start="0" data-duration="30" data-track-index="0">
+
+  <!-- ===== Scene 1: 品牌开场 (0-5s) ===== -->
+  <div data-hf-id="hf-lmi8" id="scene1" class="scene clip" data-start="0" data-duration="5" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+    <div data-hf-id="hf-q4u8" class="grid-bg"></div>
+    <div data-hf-id="hf-i31l" class="corner-mark tl"></div>
+    <div data-hf-id="hf-lxo7" class="corner-mark tr"></div>
+    <div data-hf-id="hf-5oin" class="corner-mark bl"></div>
+    <div data-hf-id="hf-mwox" class="corner-mark br"></div>
+    <div data-hf-id="hf-uiu3" class="scan-line" style="top:30%"></div>
+    <div data-hf-id="hf-rgan" class="scan-line" style="top:70%"></div>
+    <div data-hf-id="hf-auk0" class="s1-eyebrow">GLOBAL COMMERCIAL INTELLIGENCE</div>
+    <h1 data-hf-id="hf-ahj7" class="s1-title">GCCS <em data-hf-id="hf-vfsr">Trade</em><br data-hf-id="hf-x5px">Hunter</h1>
+    <div data-hf-id="hf-m1ew" class="s1-subtitle">外 贸 情 报 终 端</div>
+    <div data-hf-id="hf-65ny" class="s1-meta">
+      <span data-hf-id="hf-cl1v"><span data-hf-id="hf-9gry" class="dot"></span>SYSTEM ONLINE</span>
+      <span data-hf-id="hf-3nby">CASE #2026-01</span>
+      <span data-hf-id="hf-f8ru">CLASSIFIED</span>
+    </div>
+  </div>
+
+  <!-- ===== Scene 2: 痛点 (5-10s) ===== -->
+  <div data-hf-id="hf-0rui" id="scene2" class="scene clip" data-start="5" data-duration="5" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+    <div data-hf-id="hf-wbnc" class="grid-bg"></div>
+    <div data-hf-id="hf-djox" class="s2-label">◆ 外贸开发的三大难题</div>
+    <div data-hf-id="hf-6974" class="s2-problems">
+      <div data-hf-id="hf-9cy9" class="s2-problem">
+        <div data-hf-id="hf-ttt7" class="s2-x">✕</div>
+        <div data-hf-id="hf-z4ll" class="s2-text">找不到海外买家决策人？</div>
+      </div>
+      <div data-hf-id="hf-f4g5" class="s2-problem">
+        <div data-hf-id="hf-yakr" class="s2-x">✕</div>
+        <div data-hf-id="hf-fl1g" class="s2-text">不知道客户有没有中国办事处？</div>
+      </div>
+      <div data-hf-id="hf-gbd8" class="s2-problem">
+        <div data-hf-id="hf-xw9q" class="s2-x">✕</div>
+        <div data-hf-id="hf-svxe" class="s2-text">开发信石沉大海，没有回应？</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Scene 3: 4 阶段框架 (10-16s) ===== -->
+  <div data-hf-id="hf-vt50" id="scene3" class="scene clip" data-start="10" data-duration="6" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+    <div data-hf-id="hf-v4q9" class="grid-bg"></div>
+    <div data-hf-id="hf-6b3u" class="s3-title">4 阶段 <em data-hf-id="hf-2oii">深度情报</em> 框架</div>
+    <div data-hf-id="hf-i5ht" class="s3-sub">PHASE-BY-PHASE INTELLIGENCE PIPELINE</div>
+    <div data-hf-id="hf-8qsn" class="s3-phases">
+      <div data-hf-id="hf-lk15" class="s3-card">
+        <div data-hf-id="hf-e1wq" class="s3-card-no">PHASE / 01</div>
+        <div data-hf-id="hf-75ur" class="s3-card-title">全景画像</div>
+        <div data-hf-id="hf-ogvo" class="s3-card-en">Profile</div>
+        <div data-hf-id="hf-kpwx" class="s3-card-desc">公司全称 · 总部地址<br data-hf-id="hf-rsrt">中国办事处 · 决策人<br data-hf-id="hf-szow">邮箱 Pattern</div>
+      </div>
+      <div data-hf-id="hf-4plp" class="s3-card">
+        <div data-hf-id="hf-eg7r" class="s3-card-no">PHASE / 02</div>
+        <div data-hf-id="hf-vmre" class="s3-card-title">渠道动态</div>
+        <div data-hf-id="hf-z1kz" class="s3-card-en">Channels</div>
+        <div data-hf-id="hf-o2ur" class="s3-card-desc">销售渠道 · 参展记录<br data-hf-id="hf-sldv">旗下品牌 · 近期动态<br data-hf-id="hf-qluq">战略情报分析</div>
+      </div>
+      <div data-hf-id="hf-5wis" class="s3-card">
+        <div data-hf-id="hf-euis" class="s3-card-no">PHASE / 03</div>
+        <div data-hf-id="hf-dukn" class="s3-card-title">竞争环境</div>
+        <div data-hf-id="hf-19ru" class="s3-card-en">Competition</div>
+        <div data-hf-id="hf-vbvs" class="s3-card-desc">主要竞争对手 · 供应链<br data-hf-id="hf-q7jp">欧盟法规 · 认证要求<br data-hf-id="hf-regs">深度洞察</div>
+      </div>
+      <div data-hf-id="hf-5i7r" class="s3-card">
+        <div data-hf-id="hf-f8tt" class="s3-card-no">PHASE / 04</div>
+        <div data-hf-id="hf-1egi" class="s3-card-title">开发信</div>
+        <div data-hf-id="hf-ds5s" class="s3-card-en">Outreach</div>
+        <div data-hf-id="hf-dp0d" class="s3-card-desc">Value-Based 邮件<br data-hf-id="hf-r05r">Product-Match 邮件<br data-hf-id="hf-p0mm">决策人联系表</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Scene 4: 实操演示 (16-25s) ===== -->
+  <div data-hf-id="hf-mifi" id="scene4" class="scene clip" data-start="16" data-duration="9" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+    <div data-hf-id="hf-vj1a" class="grid-bg"></div>
+    <div data-hf-id="hf-wyx5" class="s4-left">
+      <div data-hf-id="hf-3swd" class="s4-label">◆ 实操演示</div>
+      <div data-hf-id="hf-wzs5" class="s4-title">输入网址<br data-hf-id="hf-ombl"><em data-hf-id="hf-4xyq">一键深挖</em></div>
+      <div data-hf-id="hf-08a9" class="s4-input-mock">
+        <span data-hf-id="hf-2lr8" class="prompt">TARGET ›</span>
+        <span data-hf-id="hf-zm85" class="url">hilti.com</span>
+        <span data-hf-id="hf-1edb" class="cursor"></span>
+      </div>
+      <div data-hf-id="hf-d3fy" class="s4-btn-mock">▸ 启动调查</div>
+    </div>
+    <div data-hf-id="hf-kgac" class="s4-right">
+      <div data-hf-id="hf-wst2" class="s4-phase-head">
+        <div data-hf-id="hf-yeow">
+          <div data-hf-id="hf-vmj8" class="s4-phase-no">PHASE / 01 · 全景画像</div>
+          <div data-hf-id="hf-kbpj" class="s4-phase-title">Hilti Group</div>
+        </div>
+        <div data-hf-id="hf-q4zj" class="s4-phase-status">● 流式输出中</div>
+      </div>
+      <div data-hf-id="hf-japj" class="s4-stream" id="streamContent">
+        <div data-hf-id="hf-l0l6"><span data-hf-id="hf-zkza" class="key">公司全称</span>: Hilti AG (Schaan, Liechtenstein)</div>
+        <div data-hf-id="hf-s43d"><span data-hf-id="hf-scsp" class="key">总部地址</span>: Feldkircherstrasse 100, 9494 Schaan</div>
+        <div data-hf-id="hf-ldf2"><span data-hf-id="hf-2dwd" class="key">中国办事处</span>: <span data-hf-id="hf-8zq4" class="hl">✓ 已找到 · 上海希迪</span></div>
+        <div data-hf-id="hf-8uje"><span data-hf-id="hf-5hdg" class="key">关键决策人</span>: <span data-hf-id="hf-yoot" class="val">Jahangir Doongaji</span> (CEO)</div>
+        <div data-hf-id="hf-yvgw"><span data-hf-id="hf-gmiy" class="key">主营产品</span>: 电钻 · 抛光机 · 测量仪器</div>
+        <div data-hf-id="hf-sn5e"><span data-hf-id="hf-xgtj" class="key">邮箱Pattern</span>: <span data-hf-id="hf-72af" class="val">first.last@hilti.com</span></div>
+        <div data-hf-id="hf-t1gf"><span data-hf-id="hf-ygse" class="key">决策人邮箱</span>: <span data-hf-id="hf-vpky" class="val">j.doongaji@hilti.com</span> <span data-hf-id="hf-x20s" class="hl">(Predicted)</span></div>
+        <div data-hf-id="hf-as3p"><span data-hf-id="hf-ul08" class="key">痛点分析</span>: 电钻/抛光机供应链分散<span data-hf-id="hf-90q7" class="s4-cursor"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Scene 5: 结尾 (25-30s) ===== -->
+  <div data-hf-id="hf-zo7x" id="scene5" class="scene clip" data-start="25" data-duration="5" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+    <div data-hf-id="hf-uc47" class="grid-bg"></div>
+    <div data-hf-id="hf-jk65" class="corner-mark tl"></div>
+    <div data-hf-id="hf-z453" class="corner-mark tr"></div>
+    <div data-hf-id="hf-ve1r" class="corner-mark bl"></div>
+    <div data-hf-id="hf-v2mt" class="corner-mark br"></div>
+    <div data-hf-id="hf-56tg" class="s5-stamp">CLASSIFIED · GCCS</div>
+    <h1 data-hf-id="hf-wkem" class="s5-title">输入网址<br data-hf-id="hf-qsyj"><em data-hf-id="hf-65ai">深挖情报</em></h1>
+    <div data-hf-id="hf-4si3" class="s5-tagline">生 成 开 发 信 · 一 键 导 出</div>
+    <div data-hf-id="hf-ay83" class="s5-cta"><span data-hf-id="hf-wns4" class="arrow">▸</span> GCCS TRADE HUNTER · 外贸情报终端</div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+
+  // ===== Scene 1: 品牌开场 (0-5s) =====
+  tl.from("#scene1 .s1-eyebrow", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 0.2);
+  tl.from("#scene1 .s1-title", { y: 60, opacity: 0, duration: 0.8, ease: "power3.out" }, 0.5);
+  tl.from("#scene1 .s1-subtitle", { y: 30, opacity: 0, duration: 0.6, ease: "power2.out" }, 1.0);
+  tl.from("#scene1 .s1-meta", { y: 20, opacity: 0, duration: 0.5, ease: "power2.out" }, 1.4);
+  tl.from("#scene1 .scan-line", { scaleX: 0, opacity: 0, duration: 0.6, ease: "expo.out", stagger: 0.1 }, 0.3);
+  tl.from("#scene1 .corner-mark", { scale: 0, opacity: 0, duration: 0.4, ease: "back.out(1.4)", stagger: 0.08 }, 0.1);
+
+  // ===== Scene 2: 痛点 (5-10s) =====
+  tl.from("#scene2 .s2-label", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 5.2);
+  tl.from("#scene2 .s2-problem", { x: -60, opacity: 0, duration: 0.5, ease: "power3.out", stagger: 0.25 }, 5.5);
+
+  // ===== Scene 3: 4 阶段框架 (10-16s) =====
+  tl.from("#scene3 .s3-title", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 10.2);
+  tl.from("#scene3 .s3-sub", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 10.5);
+  tl.from("#scene3 .s3-card", { y: 80, opacity: 0, duration: 0.6, ease: "power3.out", stagger: 0.15 }, 10.9);
+
+  // ===== Scene 4: 实操演示 (16-25s) =====
+  tl.from("#scene4 .s4-left", { x: -60, opacity: 0, duration: 0.6, ease: "power3.out" }, 16.2);
+  tl.from("#scene4 .s4-right", { x: 60, opacity: 0, duration: 0.6, ease: "power3.out" }, 16.4);
+  tl.from("#scene4 .s4-phase-head", { y: -15, opacity: 0, duration: 0.4, ease: "power2.out" }, 16.7);
+  tl.from("#scene4 .s4-input-mock", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 16.9);
+  tl.from("#scene4 .s4-btn-mock", { scale: 0.8, opacity: 0, duration: 0.4, ease: "back.out(1.4)" }, 17.2);
+  // 流式输出逐行出现
+  tl.from("#scene4 .s4-stream > div", { opacity: 0, x: -15, duration: 0.3, ease: "power2.out", stagger: 0.25 }, 17.8);
+
+  // ===== Scene 5: 结尾 (25-30s) =====
+  tl.from("#scene5 .s5-stamp", { scale: 0.6, opacity: 0, rotation: -8, duration: 0.5, ease: "back.out(1.6)" }, 25.2);
+  tl.from("#scene5 .s5-title", { y: 60, opacity: 0, duration: 0.7, ease: "power3.out" }, 25.6);
+  tl.from("#scene5 .s5-tagline", { y: 30, opacity: 0, duration: 0.5, ease: "power2.out" }, 26.1);
+  tl.from("#scene5 .s5-cta", { y: 20, opacity: 0, duration: 0.4, ease: "power2.out" }, 26.5);
+  tl.from("#scene5 .corner-mark", { scale: 0, opacity: 0, duration: 0.4, ease: "back.out(1.4)", stagger: 0.08 }, 25.1);
+
+  window.__timelines["root"] = tl;
+</script>
+</body>
+</html>
