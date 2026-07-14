@@ -382,6 +382,53 @@
     .phase-title{font-size:28px}
     .hero-stats{grid-template-columns:1fr}
   }
+  .wechat-card{flex-direction:column;text-align:center}
+  .wechat-qr{margin-right:0;margin-bottom:16px}
+}
+.wechat-section{
+  padding:48px 0;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  margin-top:40px;
+}
+.wechat-card{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:28px;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:32px;
+  box-shadow:var(--shadow);
+}
+.wechat-qr{
+  width:140px;
+  height:140px;
+  border-radius:8px;
+  overflow:hidden;
+  border:1px solid var(--line);
+}
+.wechat-qr img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.wechat-info{
+  text-align:left;
+}
+.wechat-info h3{
+  font-family:'Fraunces',serif;
+  font-size:24px;
+  font-weight:500;
+  color:var(--ink);
+  margin-bottom:8px;
+}
+.wechat-info p{
+  font-size:14px;
+  color:var(--ink-dim);
+  line-height:1.6;
+}
 </style>
 </head>
 <body>
@@ -566,6 +613,18 @@
       </div>
     </main>
   </div>
+
+  <section class="wechat-section">
+    <div class="wechat-card">
+      <div class="wechat-qr">
+        <img src="./wechat.jpg" alt="微信二维码">
+      </div>
+      <div class="wechat-info">
+        <h3>加我微信</h3>
+        <p>获取更多外贸工具和分享</p>
+      </div>
+    </div>
+  </section>
 
   <footer class="footer">
     <span>外贸开发 Skill · 纯前端 BYOK · Key 仅存本地</span>
