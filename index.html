@@ -545,6 +545,7 @@
     </div>
     <div class="launch-row">
       <input class="launch-input" id="targetInput" value="https://www.leds24.com/" placeholder="输入客户公司名或官网（如 leds24.com 或 revoART GmbH）">
+      <button class="tool-btn" id="demoBtn" onclick="loadDemoReport()" style="margin-left:8px;border-color:var(--gold);color:var(--gold);background:var(--gold-soft)">🎬 演示模式</button>
       <button class="launch-btn" id="launchBtn" onclick="launchInvestigation()">启动调查 <span>→</span></button>
       <button class="stop-btn" id="stopBtn" onclick="stopInvestigation()">■ 停止</button>
     </div>
@@ -1648,6 +1649,166 @@ function refreshHistoryList(){
       <div class="hist-meta"><span>${ts} · ${r.phaseCount||4}阶段</span><span class="hist-del" onclick="deleteReport(${r.id}, event)" title="删除">✕</span></div>
     </div>`;
   }).join('');
+}
+
+function loadDemoReport(){
+  currentFullText = `### 🕵️ Phase 1: 全景画像 (Profile)
+
+| 维度 | 结果 | 来源 |
+|------|------|------|
+| 公司全称 | leds24 GmbH | [官网](https://www.leds24.com/) |
+| 官网 | https://www.leds24.com | [官网](https://www.leds24.com/) |
+| 总部地址/电话 | Berliner Str. 12, 76135 Karlsruhe, Germany · +49 721 96609-0 | [Impressum](https://www.leds24.com/impressum) |
+| 中国办事处 | **发现线索**：深圳办事处（员工 LinkedIn 显示在深圳工作） | [LinkedIn](https://linkedin.com) |
+| 关键决策人 | Markus Wölfl (CEO & Founder) · Thomas Schmid (COO) | [Crunchbase](https://crunchbase.com) |
+| 邮箱Pattern | info@leds24.com (Actual) · markus.woelfl@leds24.com (Predicted) | [官网](https://www.leds24.com/kontakt) |
+
+#### ◆ 业务痛点分析
+- **供应链风险**：高度依赖中国供应商，当前中美贸易紧张局势下存在采购成本上升风险
+- **品类扩张需求**：LED 橱柜灯产品线需升级，寻求差异化产品提升毛利
+- **合规压力**：德国市场对能效标签（EPREL）要求严格，需持续更新认证
+
+#### ◆ 产品推荐策略
+推荐 MacAdam 3-step LED 橱柜灯系列，配合 OEM+ODM 定制方案，可帮助客户提升产品溢价能力。
+
+### 🕵️ Phase 2: 渠道与动态 (Channels & Activities)
+
+#### ① 销售渠道
+
+| 渠道 | 状态 | 说明 |
+|------|------|------|
+| DTC 官网 | ✅ 活跃 | 主要销售渠道，日均流量约 50K |
+| Amazon.de | ✅ 活跃 | 欧洲最大电商渠道 |
+| eBay | ✅ 活跃 | 补充渠道 |
+| B2B 批发 | ✅ 活跃 | 面向零售商和安装商 |
+
+#### ② 参展记录
+
+| 展会 | 年份 | 展位 |
+|------|------|------|
+| Light+Building | 2024 | Hall 4.1, Stand D59 |
+| Hong Kong Lighting Fair | 2023 | Hall 3C-E01 |
+
+#### ③ 旗下品牌与类目
+
+| 品牌/类目 | 定位 | 覆盖范围 |
+|-----------|------|----------|
+| leds24 | 主品牌 | LED 照明全品类 |
+| LED Kitchen | 子品牌 | 橱柜灯专项 |
+
+#### ④ 近期动态
+
+1. **2024年新品发布**：推出智能调光 LED 灯带系列，支持 Matter 协议 [官网新闻](https://www.leds24.com/news)
+2. **物流优化**：在德国建立第二个仓库，提升次日达覆盖范围 [行业报道](https://www.led-magazin.de)
+
+#### ◆ 战略情报分析
+leds24 正在加速智能化布局，从传统 LED 供应商向智能照明解决方案提供商转型。
+
+### 🕵️ Phase 3: 竞争与环境 (Competition & Environment)
+
+#### ① 主要竞争对手
+
+| 竞争对手 | 总部 | 核心优势 |
+|----------|------|----------|
+| LEDVANCE | Munich | 欧司朗背书，品牌力强 |
+| Paulmann | Harsewinkel | 德国本土制造，高端定位 |
+| Philips Hue | Amsterdam | 智能家居生态领先 |
+| Osram | Munich | 技术积累深厚 |
+
+#### ② 供应链结构
+- **一级供应商**：中国深圳/中山 LED 制造商（约 60%）
+- **二级供应商**：德国本地分销商（约 30%）
+- **自研产品**：约 10% 高端定制产品
+
+#### ③ 法规与证书要求
+
+| 法规 | 要求 | 状态 |
+|------|------|------|
+| CE | 强制 | ✅ 已认证 |
+| RoHS | 强制 | ✅ 已认证 |
+| EPREL | 能效标签 | ✅ 已注册 |
+| ErP-B | 能效等级 | ✅ 符合要求 |
+
+#### ◆ 深度洞察
+1. **差异化机会**：客户品牌定位中高端，可提供定制化光色方案（MacAdam 3-step）
+2. **合规跟进**：EPREL 标签需持续更新，可提供一站式合规服务
+3. **样品策略**：建议提供免费样品 + 定制调光演示箱
+
+### 🕵️ Phase 4: 开发信与决策人 (Outreach)
+
+#### 任务 A · Value-Based Email
+
+**Subject**: LED 橱柜灯定制方案 — 助力 leds24 提升产品溢价
+
+Dear Mr. Wölfl,
+
+I hope this email finds you well. My name is [Your Name] from [Your Company], a professional LED lighting manufacturer with Walmart and Costco factory audit credentials.
+
+I've been following leds24's impressive growth in the German market, particularly your focus on smart LED solutions. As a trusted supplier to major retailers, I'd like to introduce our **MacAdam 3-step LED cabinet lighting series** — specifically designed to help premium brands like leds24 differentiate in a crowded market.
+
+Key advantages:
+- **Superior color consistency** (MacAdam 3-step) — critical for high-end kitchen applications
+- **OEM+ODM flexibility** — fully customizable light engines and form factors
+- **One-stop compliance** — EPREL, ErP-B, CE, RoHS ready
+
+Would you be open to a 15-minute call next week to discuss how we could support leds24's product roadmap?
+
+Best regards,
+[Your Name]
+BD Manager
+
+#### 任务 A · Product-Match Email
+
+**Subject**: Smart LED Strip Solution — Perfect for leds24's Matter-enabled lineup
+
+Dear Mr. Schmid,
+
+I noticed leds24 recently launched Matter-compatible LED strips — congratulations on the strategic move into smart home integration!
+
+At [Your Company], we've been developing **Matter-ready LED light engines** with seamless integration capabilities. Our solution offers:
+- Plug-and-play Matter certification
+- Customizable color temperatures
+- Competitive pricing with volume commitments
+
+Given your emphasis on smart home expansion, I believe this could be a valuable addition to your supply chain. Could we explore a sample partnership?
+
+Best regards,
+[Your Name]
+
+#### 任务 B · 关键决策人联系表
+
+| 姓名 | 职位 | 邮箱 | LinkedIn | 来源 |
+|------|------|------|----------|------|
+| Markus Wölfl | CEO & Founder | markus.woelfl@leds24.com (Predicted) | [LinkedIn](https://linkedin.com) | Crunchbase |
+| Thomas Schmid | COO | thomas.schmid@leds24.com (Predicted) | [LinkedIn](https://linkedin.com) | LinkedIn |
+| Anna Müller | Procurement Manager | anna.mueller@leds24.com (Predicted) | — | LinkedIn |
+
+#### 任务 C · 终极建议
+
+**LinkedIn 触达**：先连接 Anna Müller（采购经理），观察其动态后再连接 Markus Wölfl
+
+**样品攻势**：建议寄送完整样品包（3款不同色温 + 调光演示箱），附带沃尔玛/Costco 验厂证书复印件
+
+**跟进节奏**：首次邮件 → 3天后 LinkedIn 私信 → 7天后电话跟进 → 14天后发送定制方案</parameter;
+  phaseTexts = {1:'', 2:'', 3:'', 4:''};
+  const headerRe = /(?:^|\n)(#{2,4})\s*(?:🕵️\s*)?Phase\s*(\d)([^\n]*)/gi;
+  const ms = [...currentFullText.matchAll(headerRe)];
+  ms.forEach((m, i) => {
+    const num = parseInt(m[2]);
+    const start = m.index;
+    const end = i+1 < ms.length ? ms[i+1].index : currentFullText.length;
+    phaseTexts[num] = currentFullText.substring(start, end);
+  });
+  document.getElementById('targetInput').value = 'leds24.com';
+  document.getElementById('caseId').textContent = 'LEDS24.COM';
+  document.getElementById('renderArea').innerHTML = '';
+  renderStreamingNow();
+  document.querySelectorAll('.phase-item').forEach(it=>{ it.classList.remove('disabled','active'); it.classList.add('done'); });
+  document.querySelectorAll('.phase-meta').forEach(m => m.innerHTML = m.innerHTML.replace(/流式输出中/g,'已完成').replace('●','✓').replace('live','ok'));
+  showToolbar('leds24.com');
+  refreshHistoryList();
+  toast('🎬 已载入演示报告','ok');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function toast(msg, type){
